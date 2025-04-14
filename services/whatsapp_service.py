@@ -2,14 +2,22 @@ import os
 import logging
 import httpx
 from fastapi import HTTPException
+from dotenv import load_dotenv  # <-- add this
+
+# Load environment variables from .env
+load_dotenv()
 
 # Konfigurasi logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)  # Optional: show logs in console
 
 # Environment Variables
 TOKEN_META = os.getenv("TOKEN_META")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
+print("TOKEN_META:", TOKEN_META)  # Debug print, remove in production
+
+# Menu Constants
 MENU_1 = "menu-1"
 MENU_2 = "menu-2"
 

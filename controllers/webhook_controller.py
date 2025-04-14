@@ -1,10 +1,15 @@
 import os
 import logging
 from fastapi import HTTPException
+from dotenv import load_dotenv  # ⬅️ Add this line to load .env
 from services.whatsapp_service import send_message, send_menu
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Konfigurasi logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # Environment Variables
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
@@ -42,6 +47,7 @@ async def webhook_handler(payload: dict):
                 await send_message(from_no, "hello world!")
             else:
                 await send_menu(from_no)
+
         elif message["type"] == "interactive" and message["interactive"]["type"] == "list_reply":
             list_reply_id = message["interactive"]["list_reply"]["id"]
             response_text = "anda memilih menu 1" if list_reply_id == "menu-1" else "anda memilih menu 2"

@@ -1,11 +1,12 @@
 import os 
 import logging
-from fastapi import FastAPI, Request, HTTPException
-import httpx
-from pydantic import BaseModel
-
+from fastapi import FastAPI
+from dotenv import load_dotenv  # ✅ Load .env
 from services.whatsapp_service import send_message, send_menu
 from controllers.webhook_controller import webhook_verifier_handler, webhook_handler
+
+# Load environment variables
+load_dotenv()
 
 # Configure Logging Stage
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 3006))
 
+# FastAPI instance
 app = FastAPI()
 
 @app.get("/")

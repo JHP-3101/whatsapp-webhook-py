@@ -15,13 +15,20 @@ logging.basicConfig(level=logging.INFO)
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
-async def webhook_verifier_handler(hub_mode: str, hub_challenge: str, hub_verify_token: str):
-    if hub_mode and hub_verify_token:
-        if hub_mode == "subscribe" and hub_verify_token == TOKEN_VERIFIER_WEBHOOK:
-            return int(hub_challenge)
-        else:
-            raise HTTPException(status_code=403, detail="Forbidden")
-    raise HTTPException(status_code=400, detail="Bad Request")
+async def webhook_verifier_handler(hub_mode: str = None, hub_challenge: str = None, hub_verify_token: str = None):
+    # Debug logging
+    logger.info(f"Verification attempt - Mode: {hub_mode}, Token: {hub_verify_token}")
+    
+    if not all([hub_mode, hub_challenge, hub_verify_token]):
+        logger.error("Missing one or more verification parameters")
+        raise HTTPException(status_code=400, detail="Bad Request: Missing parameters")
+    
+    if hub_mode == "subscribe" and hub_verify_token == TOKEN_VERIFIER_WEBHOOK:
+        logger.info("Webhook verified successfully")
+        return int(hub_challenge)
+    
+    logger.error(f"Verification failed - Expected token: {TOKEN_VERIFIER_WEBHOOK}, Received: {hub_verify_token}")
+    raise HTTPException(status_code=403, detail="Forbidden")
 
 async def webhook_handler(payload: dict):
     try:

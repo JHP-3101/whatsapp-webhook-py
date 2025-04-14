@@ -18,13 +18,19 @@ PORT = int(os.getenv("PORT", 3006))
 
 # FastAPI instance
 app = FastAPI()
+print("FASTAPI APP LOADED ✅")
 
 @app.get("/")
 async def home():
     return {"message": "service whatsapp"}
 
+from fastapi import Query
+
 @app.get("/webhook")
-async def webhook_verify(hub_mode: str = None, hub_challenge: str = None, hub_verify_token: str = None):
+async def webhook_verify(hub_mode: str = Query(None, alias="hub.mode"),
+                         hub_challenge: str = Query(None, alias="hub.challenge"),
+                         hub_verify_token: str = Query(None, alias="hub.verify_token")):
+    print("WEBHOOK VERIFIER TRIGGERED")
     return await webhook_verifier_handler(hub_mode, hub_challenge, hub_verify_token)
 
 @app.post("/webhook")

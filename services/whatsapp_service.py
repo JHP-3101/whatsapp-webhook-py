@@ -18,16 +18,20 @@ PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 async def get_whatsapp_profile(phone_number: str):
     """Get WhatsApp user's profile information (including name)"""
-    url = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/contacts"
-    params = {
-        "access_token": TOKEN_META,
-        "blocking": "wait",
-        "contacts": [phone_number]
+    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages"
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone_number,
+        "type": "contacts"
+    }
+    headers = {
+        "Authorization": f"Bearer {TOKEN_META}",
+        "Content-Type": "application/json"
     }
     
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=params)
+            response = await client.post(url, json=payload, headers=headers)
             if response.status_code != 200:
                 logger.error(f"Profile lookup error: {response.text}")
                 return None

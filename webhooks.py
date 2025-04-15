@@ -27,10 +27,12 @@ async def home():
 from fastapi import Query
 
 @app.get("/webhook")
-async def webhook_verify(hub_mode: str = Query(None, alias="hub.mode"),
-                         hub_challenge: str = Query(None, alias="hub.challenge"),
-                         hub_verify_token: str = Query(None, alias="hub.verify_token")):
-    print("WEBHOOK VERIFIER TRIGGERED")
+async def webhook_verify(
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_verify_token: str = Query(None, alias="hub.verify_token")
+):
+    logger.info("Webhook verification request received")
     return await webhook_verifier_handler(hub_mode, hub_challenge, hub_verify_token)
 
 @app.post("/webhook")

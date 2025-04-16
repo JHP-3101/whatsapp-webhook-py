@@ -10,13 +10,14 @@ class ContactHandler:
     def __init__(self, value: dict):
         self.value = value
         
-    def extract_user_info(self, value: dict) -> str:
+    def extract_user_info(self) -> tuple[str,str]:
         contacts = value.get("contacts", [])
         if contacts:
             profile = contacts[0].get("profile", {})
             username = profile.get("name", "Pelanggan")
-            logger.info(f"👤 Nama pengguna: {username}")
-            return username
+            from_no = contacts[0].get("wa_id")
+            logger.info(f"👤 Nama pengguna: {username}, No WA: {from_no}")
+            return username, from_no
         return "Pelanggan"
 
 class MessageHandler:

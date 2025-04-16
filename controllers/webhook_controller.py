@@ -31,6 +31,9 @@ async def webhook_verifier_handler(hub_mode: str = None, hub_challenge: str = No
 
 async def webhook_handler(payload: dict):
     try:
+        import json
+        logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
+        
         if not payload.get("object"):
             logger.warning("Received payload with invalid object")
             return {"message": "Invalid object"}
@@ -42,7 +45,15 @@ async def webhook_handler(payload: dict):
         if value.get("metadata", {}).get("phone_number_id") != PHONE_NUMBER_ID:
             logger.error("Phone number ID mismatch")
             raise HTTPException(status_code=400, detail="Phone number ID does not match")
-
+        
+        contacts = value.get("contacts", [])
+        username = "Pelanggan"  # Default
+        if contacts:
+            profile = contacts[0].get("profile", {})
+            username = profile.get("name", "Pelanggan")
+            
+        logger.info(f"👤 Nama pengguna terdeteksi: {username}")
+        
         messages = value.get("messages", [])
         if not messages:
             logger.info("No messages in payload")
@@ -50,20 +61,15 @@ async def webhook_handler(payload: dict):
 
         message = messages[0]
         from_no = message["from"]
-        username = message.get("profile", {}).get("name", "Pelanggan")
         
         if message["type"] == "text":
             msg_body = message["text"].get("body", "").lower()
-            username = message.get("profile", {}).get("name", "Pelanggan")
-            logger.info(username)
-
             if msg_body == "test":
                 logger.info("Sending test message")
                 await send_message(from_no, "hello world!")
             else:
                 logger.info("Sending main menu")
                 await send_menu(from_no, username)
-                logger.info(username)
 
         elif message["type"] == "interactive":
             interactive = message["interactive"]

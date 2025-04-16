@@ -2,7 +2,6 @@ import os
 import logging
 from fastapi import HTTPException
 from dotenv import load_dotenv
-from services.whatsapp_service import send_message, send_menu
 from handlers.whatsapp_handlers import MessageHandler, ContactHandler
 
 # Load .env

@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 wa_service = WhatsappService()
 
 class ContactHandler:
+    def __init__(self, value: dict):
+        self.value = value
+        
     def extract_username(self, value: dict) -> str:
         contacts = value.get("contacts", [])
         if contacts:

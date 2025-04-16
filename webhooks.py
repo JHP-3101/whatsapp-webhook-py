@@ -2,8 +2,7 @@ import os
 import logging
 from fastapi import FastAPI
 from dotenv import load_dotenv  # ✅ Load .env
-from services.whatsapp_service import send_message, send_menu
-from controllers.webhook_controller import webhook_verifier_handler, webhook_handler
+from controllers.webhook_controller import WebhookController
 
 # Load environment variables
 load_dotenv()
@@ -26,18 +25,20 @@ async def home():
 
 from fastapi import Query
 
+# Load Webhook Controller
+webhook_controller = WebhookController()
+
 @app.get("/webhook")
 async def webhook_verify(
     hub_mode: str = Query(None, alias="hub.mode"),
     hub_challenge: str = Query(None, alias="hub.challenge"),
     hub_verify_token: str = Query(None, alias="hub.verify_token")
 ):
-    logger.info("Webhook verification request received")
-    return await webhook_verifier_handler(hub_mode, hub_challenge, hub_verify_token)
+    return await webhook_controller.verify(hub_mode, hub_challenge, hub_verify_token)
 
 @app.post("/webhook")
 async def webhook(payload: dict):
-    return await webhook_handler(payload)
+    return await webhook_controller.handle_webhook(payload)
 
 @app.get("/health")
 async def health_check():

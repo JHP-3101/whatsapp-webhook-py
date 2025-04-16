@@ -16,33 +16,33 @@ logging.basicConfig(level=logging.INFO)  # Optional: show logs in console
 TOKEN_META = os.getenv("TOKEN_META")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
-async def get_whatsapp_profile(phone_number: str):
-    """Get WhatsApp user's profile information (including name)"""
-    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/contacts"
-    payload = {
-        "blocking": "wait",
-        "contacts": [phone_number],
-        "force_check": True
-    }
-    headers = {
-        "Authorization": f"Bearer {TOKEN_META}",
-        "Content-Type": "application/json"
-    }
+# async def get_whatsapp_profile(phone_number: str):
+#     """Get WhatsApp user's profile information (including name)"""
+#     url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/contacts"
+#     payload = {
+#         "blocking": "wait",
+#         "contacts": [phone_number],
+#         "force_check": True
+#     }
+#     headers = {
+#         "Authorization": f"Bearer {TOKEN_META}",
+#         "Content-Type": "application/json"
+#     }
     
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=headers)
-            if response.status_code != 200:
-                logger.error(f"Profile lookup error: {response.text}")
-                return None
+#     try:
+#         async with httpx.AsyncClient() as client:
+#             response = await client.post(url, json=payload, headers=headers)
+#             if response.status_code != 200:
+#                 logger.error(f"Profile lookup error: {response.text}")
+#                 return None
             
-            data = response.json()
-            if "contacts" in data and len(data["contacts"]) > 0:
-                return data["contacts"][0].get("profile, {}").get("name")
-            return None
-    except Exception as e:
-        logger.error(f"Error fetching WhatsApp profile: {str(e)}")
-        return None
+#             data = response.json()
+#             if "contacts" in data and len(data["contacts"]) > 0:
+#                 return data["contacts"][0].get("profile, {}").get("name")
+#             return None
+#     except Exception as e:
+#         logger.error(f"Error fetching WhatsApp profile: {str(e)}")
+#         return None
 
 async def send_message(no_hp: str, message: str):
     url = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
@@ -61,8 +61,6 @@ async def send_message(no_hp: str, message: str):
             raise HTTPException(status_code=response.status_code, detail="Failed to send message")
 
 async def send_menu(no_hp: str, username: str= "Pelanggan"):
-    username = await get_whatsapp_profile(no_hp) or "Pelanggan"
-    
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
     payload = {
         "messaging_product": "whatsapp",

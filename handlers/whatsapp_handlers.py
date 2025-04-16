@@ -10,7 +10,7 @@ class ContactHandler:
     def __init__(self, value: dict):
         self.value = value
         
-    def extract_username(self, value: dict) -> str:
+    def extract_user_info(self, value: dict) -> str:
         contacts = value.get("contacts", [])
         if contacts:
             profile = contacts[0].get("profile", {})

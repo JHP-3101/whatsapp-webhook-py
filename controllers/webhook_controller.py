@@ -55,4 +55,4 @@ class WebhookController:
         username, from_no = contact_handler.extract_user_info()
 
         message_handler = MessageHandler(value, from_no, username)
-        return await message_handler.process()
+        return await message_handler.handle_text()

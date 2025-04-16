@@ -18,11 +18,11 @@ PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 async def get_whatsapp_profile(phone_number: str):
     """Get WhatsApp user's profile information (including name)"""
-    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages"
+    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/contacts"
     payload = {
-        "messaging_product": "whatsapp",
-        "to": phone_number,
-        "type": "contacts"
+        "blocking": "wait",
+        "contacts": [phone_number],
+        "force_check": True
     }
     headers = {
         "Authorization": f"Bearer {TOKEN_META}",
@@ -37,9 +37,9 @@ async def get_whatsapp_profile(phone_number: str):
                 return None
             
             data = response.json()
-            if data.get("contacts"):
-                contact = data["contacts"][0]
-                return contact.get("profile", {}).get("name")
+            if "contacts" in data and len(data["contacts"]) > 0:
+                return data["contacts"][0].get("profile, {}").get("name")
+            return None
     except Exception as e:
         logger.error(f"Error fetching WhatsApp profile: {str(e)}")
         return None
@@ -60,10 +60,10 @@ async def send_message(no_hp: str, message: str):
             logger.error(f"Send Message Error: {response.text}")
             raise HTTPException(status_code=response.status_code, detail="Failed to send message")
 
-async def send_menu(no_hp: str):
+async def send_menu(no_hp: str, username: str= "Pelanggan"):
     username = await get_whatsapp_profile(no_hp) or "Pelanggan"
     
-    url = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
+    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
     payload = {
         "messaging_product": "whatsapp",
         "to": no_hp,

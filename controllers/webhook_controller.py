@@ -50,15 +50,18 @@ async def webhook_handler(payload: dict):
 
         message = messages[0]
         from_no = message["from"]
+        username = message.get("profile", {}).get("name", "Pelanggan")
         
         if message["type"] == "text":
             msg_body = message["text"].get("body", "").lower()
+            username = message.get("profile", {}).get("name", "Pelanggan")
+            
             if msg_body == "test":
                 logger.info("Sending test message")
                 await send_message(from_no, "hello world!")
             else:
                 logger.info("Sending main menu")
-                await send_menu(from_no)
+                await send_menu(from_no, username)
 
         elif message["type"] == "interactive":
             interactive = message["interactive"]

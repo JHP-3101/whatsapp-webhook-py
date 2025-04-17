@@ -1,12 +1,12 @@
 # handlers/message_handler.py
 import logging
-from services.whatsapp_service import WhatsAppService
+from services.whatsapp_service import WhatsappService
 from globals import constants
 
 logger = logging.getLogger(__name__)
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsAppService):
+    def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
 
     async def handle_text_message(self, message: dict, from_no: str, username: str):

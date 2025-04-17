@@ -1,92 +1,79 @@
+# controllers/webhook_controller.py
 import os
 import logging
-from fastapi import HTTPException
+import json
+from fastapi import HTTPException, Depends
 from dotenv import load_dotenv
-from handlers.whatsapp_handlers import MessageHandler, ContactHandler
+from services.whatsapp_service import WhatsAppService
+from handlers.message_handler import MessageHandler  # Import MessageHandler
 
-# Load .env
 load_dotenv()
 
-# Konfigurasi logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# Env vars
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
-PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
+# Dependency Injection for WhatsAppService
+def get_whatsapp_service():
+    return WhatsAppService()
 
-class WebhookController:
-    def __init__(self):
-        self.token_verifier = TOKEN_VERIFIER_WEBHOOK
-        self.phone_number_id = PHONE_NUMBER_ID
+# Dependency Injection for WebhookProcessor
+class WebhookProcessor:
+    def __init__(self, whatsapp_service: WhatsAppService):
+        self.whatsapp_service = whatsapp_service
+        self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
+        self.user_state = {} # In-memory state management (for demonstration)
 
-    async def verify(self, hub_mode: str, hub_challenge: str, hub_verify_token: str):
-        logger.info(f"🔐 Verification request: mode={hub_mode}, token={hub_verify_token}")
-        
-        if not all([hub_mode, hub_challenge, hub_verify_token]):
-            logger.error("❌ Missing verification parameters")
-            raise HTTPException(status_code=400, detail="Bad Request: Missing parameters")
-
-        if hub_mode == "subscribe" and hub_verify_token == self.token_verifier:
-            logger.info("✅ Webhook verified successfully")
-            return int(hub_challenge)
-
-        logger.error(f"❌ Token mismatch: expected={self.token_verifier}")
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-async def webhook_handler(payload: dict):
-    try:
-        import json
-        logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
-        
-        if not payload.get("object"):
-            logger.warning("⚠️ Invalid payload object")
-            return {"message": "Invalid object"}
-
-        entry = payload.get("entry", [{}])[0]
+    async def process_webhook_entry(self, entry: dict):
         changes = entry.get("changes", [{}])[0]
         value = changes.get("value", {})
 
-        if value.get("metadata", {}).get("phone_number_id") != self.phone_number_id:
-            logger.error("📞 Phone number ID mismatch")
+        if value.get("metadata", {}).get("phone_number_id") != self.whatsapp_service.phone_number_id:
+            logger.error("Phone number ID mismatch in webhook payload")
             raise HTTPException(status_code=400, detail="Phone number ID does not match")
-        
+
         contacts = value.get("contacts", [])
-        username = "Pelanggan"  # Default
-        if contacts:
-            profile = contacts[0].get("profile", {})
-            username = profile.get("name", "Pelanggan")
-            
-        logger.info(f"👤 Nama pengguna terdeteksi: {username}")
-        
+        username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
+
         messages = value.get("messages", [])
-        if not messages:
-            logger.info("No messages in payload")
-            return {"message": "No messages to process"}
+        if messages:
+            message = messages[0]
+            from_no = message["from"]
+            message_type = message.get("type")
 
-        message = messages[0]
-        from_no = message["from"]
-        
-        if message["type"] == "text":
-            msg_body = message["text"].get("body", "").lower()
-            if msg_body == "test":
-                logger.info("Sending test message")
-                await send_message(from_no, "hello world!")
+            # Basic state management example:
+            if from_no not in self.user_state:
+                self.user_state[from_no] = {}
+
+            if message_type == constants.TEXT_MESSAGE:
+                await self.message_handler.handle_text_message(message, from_no, username)
+            elif message_type == constants.INTERACTIVE_MESSAGE:
+                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no)
             else:
-                logger.info("Sending main menu")
-                await send_menu(from_no, username)
+                logger.warning(f"Received unknown message type '{message_type}' from {from_no}")
+                await self.whatsapp_service.send_menu(from_no, username) # Default fallback
+        else:
+            logger.info("No messages in webhook payload to process")
 
-        elif message["type"] == "interactive":
-            interactive = message["interactive"]
-            if interactive["type"] == "list_reply":
-                list_reply_id = interactive["list_reply"]["id"]
-                response_text = "Anda memilih menu 1" if list_reply_id == "menu-1" else "Anda memilih menu 2"
-                logger.info(f"Handling list reply: {list_reply_id}")
-                await send_message(from_no, response_text)
+def get_webhook_processor(whatsapp_service: WhatsAppService = Depends(get_whatsapp_service)):
+    return WebhookProcessor(whatsapp_service)
+
+async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
+    try:
+        logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
+
+        if not payload.get("object"):
+            logger.warning("Received payload with invalid object")
+            return {"message": "Invalid object"}
+
+        entry = payload.get("entry", [{}])[0]
+        await webhook_processor.process_webhook_entry(entry)
 
         return {"status": "success"}
 
+    except HTTPException as http_exc:
+        raise http_exc # Re-raise HTTP exceptions
     except Exception as e:
         logger.error(f"Error in webhook handler: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")

@@ -14,7 +14,21 @@ logging.basicConfig(level=logging.INFO)
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 
-# Dependency Injection for WhatsappService
+async def webhook_verifier_handler(hub_mode: str = None, hub_challenge: str = None, hub_verify_token: str = None):
+    logger.info(f"Verification attempt - Mode: {hub_mode}, Token: {hub_verify_token}")
+
+    if not all([hub_mode, hub_challenge, hub_verify_token]):
+        logger.error("Missing one or more verification parameters")
+        raise HTTPException(status_code=400, detail="Bad Request: Missing parameters")
+
+    if hub_mode == "subscribe" and hub_verify_token == TOKEN_VERIFIER_WEBHOOK:
+        logger.info("Webhook verified successfully")
+        return int(hub_challenge)
+
+    logger.error(f"Verification failed - Expected token: {TOKEN_VERIFIER_WEBHOOK}, Received: {hub_verify_token}")
+    raise HTTPException(status_code=403, detail="Forbidden")
+
+# Dependency Injection for WhatsAppService
 def get_whatsapp_service():
     return WhatsappService()
 

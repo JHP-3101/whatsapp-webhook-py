@@ -4,7 +4,7 @@ import logging
 import json
 from fastapi import HTTPException, Depends
 from dotenv import load_dotenv
-from services.whatsapp_service import WhatsAppService
+from services.whatsapp_service import WhatsappService
 from handlers.message_handler import MessageHandler  # Import MessageHandler
 
 load_dotenv()
@@ -14,13 +14,13 @@ logging.basicConfig(level=logging.INFO)
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 
-# Dependency Injection for WhatsAppService
+# Dependency Injection for WhatsappService
 def get_whatsapp_service():
-    return WhatsAppService()
+    return WhatsappService()
 
 # Dependency Injection for WebhookProcessor
 class WebhookProcessor:
-    def __init__(self, whatsapp_service: WhatsAppService):
+    def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.user_state = {} # In-memory state management (for demonstration)
@@ -56,7 +56,7 @@ class WebhookProcessor:
         else:
             logger.info("No messages in webhook payload to process")
 
-def get_webhook_processor(whatsapp_service: WhatsAppService = Depends(get_whatsapp_service)):
+def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)
 
 async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):

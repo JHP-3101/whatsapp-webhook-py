@@ -3,7 +3,8 @@ import os
 import logging
 from fastapi import Depends, FastAPI
 from dotenv import load_dotenv
-from controllers.webhook_controller import webhook_verifier_handler, webhook_handler, get_webhook_processor, get_whatsapp_service  # Import the functions and dependency providers
+from controllers.webhook_controller import webhook_verifier_handler, webhook_handler, WebhookProcessor  # Import the functions and dependency providers
+from services.whatsapp_service import WhatsappService
 
 # Load environment variables
 load_dotenv()
@@ -35,8 +36,14 @@ async def webhook_verify(
     logger.info("Webhook verification request received")
     return await webhook_verifier_handler(hub_mode, hub_challenge, hub_verify_token)
 
+async def get_whatsapp_service_instance():
+    return WhatsappService()
+
+async def get_webhook_processor_instance(whatsapp_service: WhatsappService = Depends(get_whatsapp_service_instance)):
+    return WebhookProcessor(whatsapp_service)
+
 @app.post("/webhook")
-async def webhook(payload: dict, webhook_processor: Depends = Depends(lambda: None)): # webhook_processor injected
+async def webhook(payload: dict, webhook_processor: Depends = Depends(get_webhook_processor_instance)): # webhook_processor injected
     return await webhook_handler(payload, webhook_processor)
 
 @app.get("/health")

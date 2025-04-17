@@ -29,6 +29,11 @@ async def webhook_verifier_handler(hub_mode: str = None, hub_challenge: str = No
     logger.error(f"Verification failed - Expected token: {TOKEN_VERIFIER_WEBHOOK}, Received: {hub_verify_token}")
     raise HTTPException(status_code=403, detail="Forbidden")
 
+# Dependency Injection for WhatsAppService
+def get_whatsapp_service():
+    return WhatsappService()
+
+# Dependency Injection for WebhookProcessor
 class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
@@ -66,7 +71,10 @@ class WebhookProcessor:
         else:
             logger.info("No messages in webhook payload to process")
 
-async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor):
+def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
+    return WebhookProcessor(whatsapp_service)
+
+async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
     try:
         logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
 

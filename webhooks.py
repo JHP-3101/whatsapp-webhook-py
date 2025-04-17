@@ -1,7 +1,7 @@
 # webhook.py
 import os
 import logging
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from dotenv import load_dotenv
 from controllers.webhook_controller import webhook_verifier_handler, webhook_handler, get_webhook_processor, get_whatsapp_service  # Import the functions and dependency providers
 

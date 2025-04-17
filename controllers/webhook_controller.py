@@ -4,6 +4,7 @@ import logging
 import json
 from fastapi import HTTPException, Depends
 from dotenv import load_dotenv
+from globals import constants
 from services.whatsapp_service import WhatsappService
 from handlers.message_handler import MessageHandler  # Import MessageHandler
 

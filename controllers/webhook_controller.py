@@ -63,7 +63,7 @@ class WebhookProcessor:
             if message_type == constants.TEXT_MESSAGE:
                 await self.message_handler.handle_text_message(message, from_no, username)
             elif message_type == constants.INTERACTIVE_MESSAGE:
-                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no)
+                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
             else:
                 logger.warning(f"Received unknown message type '{message_type}' from {from_no}")
                 pass

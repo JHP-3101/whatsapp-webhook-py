@@ -10,39 +10,44 @@ load_dotenv()
 
 # Konfigurasi logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)  # Optional: show logs in console
-
-# Environment Variables
-TOKEN_META = os.getenv("TOKEN_META")
-PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 class WhatsappService:
     def __init__(self):
-        self.token = TOKEN_META
-        self.phone_number_id = PHONE_NUMBER_ID
-        self.base_url = f"https://graph.facebook.com/v20.0/{self.phone_number_id}"
+        self.token = os.getenv("TOKEN_META")
+        self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
+        self.base_url = "https://graph.facebook.com/v20.0"
+    
+    async def _post(self, endpoint: str, payload: dict) :
+        url = f"{self.base_url}/{self.phone_number_id}/{endpoint}?access_token={self.token}"
+        headers = {"Content-Type": "application/json"}
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url, json=payload, headers=headers, timeout=10) # Add timeout
+                response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"WhatsApp API Error ({e.response.status_code if e.response else 'N/A'}): {e} - Endpoint: {endpoint}, Payload: {payload}")
+                raise HTTPException(status_code=500, detail=f"Failed to interact with WhatsApp API: {e}")
+            except httpx.TimeoutException as e:
+                logger.error(f"WhatsApp API Timeout Error: {e} - Endpoint: {endpoint}, Payload: {payload}")
+                raise HTTPException(status_code=504, detail="WhatsApp API request timed out")
+            except Exception as e:
+                logger.error(f"An unexpected error occurred during WhatsApp API call: {e} - Endpoint: {endpoint}, Payload: {payload}")
+                raise HTTPException(status_code=500, detail="Internal server error during WhatsApp API call")
         
-    async def send_message(no_hp: str, message: str):
-        url = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
+    async def send_message(self, to: str, message: str):
         payload = {
             "messaging_product": "whatsapp",
-            "to": no_hp,
+            "to": to,
             "type": "text",
             "text": {"body": message},
         }
-        headers = {"Content-Type": "application/json"}
+        await self._post("messages", payload)
         
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=headers)
-            if response.status_code != 200:
-                logger.error(f"Send Message Error: {response.text}")
-                raise HTTPException(status_code=response.status_code, detail="Failed to send message")
-        
-    async def send_menu(no_hp: str, username: str= "Pelanggan"):
-        url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages?access_token={TOKEN_META}"
+    async def send_menu(self, to: str, username: str = "Pelanggan"):
         payload = {
             "messaging_product": "whatsapp",
-            "to": no_hp,
+            "to": to,
             "type": "interactive",
             "interactive": {
                 "type": "list",
@@ -59,12 +64,19 @@ class WhatsappService:
                 }
             }
         }
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload)
-            if response.status_code != 200:
-                logger.error(f"Send menu error: {response.text}")
-                raise HTTPException(status_code=response.status_code, detail="Failed to send menu")
+        await self._post("messages", payload)
 
-
-
+    # Example of sending a template message (Illustrative)
+    async def send_template_message(self, to: str, template_name: str, language_code: str, components: list = None):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "template",
+            "template": {
+                "name": template_name,
+                "language": {"code": language_code}
+            }
+        }
+        if components:
+            payload["template"]["components"] = components
+        await self._post("messages", payload)

@@ -35,10 +35,11 @@ class WebhookController:
         logger.error(f"❌ Token mismatch: expected={self.token_verifier}")
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    async def handle_webhook(self, payload: dict):
+async def webhook_handler(payload: dict):
+    try:
         import json
-        logger.info(f"📩 Payload masuk:\n{json.dumps(payload, indent=2)}")
-
+        logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
+        
         if not payload.get("object"):
             logger.warning("⚠️ Invalid payload object")
             return {"message": "Invalid object"}
@@ -50,9 +51,42 @@ class WebhookController:
         if value.get("metadata", {}).get("phone_number_id") != self.phone_number_id:
             logger.error("📞 Phone number ID mismatch")
             raise HTTPException(status_code=400, detail="Phone number ID does not match")
+        
+        contacts = value.get("contacts", [])
+        username = "Pelanggan"  # Default
+        if contacts:
+            profile = contacts[0].get("profile", {})
+            username = profile.get("name", "Pelanggan")
+            
+        logger.info(f"👤 Nama pengguna terdeteksi: {username}")
+        
+        messages = value.get("messages", [])
+        if not messages:
+            logger.info("No messages in payload")
+            return {"message": "No messages to process"}
 
-        contact_handler = ContactHandler(value)
-        username, from_no = contact_handler.extract_user_info()
+        message = messages[0]
+        from_no = message["from"]
+        
+        if message["type"] == "text":
+            msg_body = message["text"].get("body", "").lower()
+            if msg_body == "test":
+                logger.info("Sending test message")
+                await send_message(from_no, "hello world!")
+            else:
+                logger.info("Sending main menu")
+                await send_menu(from_no, username)
 
-        message_handler = MessageHandler(value, from_no, username)
-        return await message_handler.handle_text()
+        elif message["type"] == "interactive":
+            interactive = message["interactive"]
+            if interactive["type"] == "list_reply":
+                list_reply_id = interactive["list_reply"]["id"]
+                response_text = "Anda memilih menu 1" if list_reply_id == "menu-1" else "Anda memilih menu 2"
+                logger.info(f"Handling list reply: {list_reply_id}")
+                await send_message(from_no, response_text)
+
+        return {"status": "success"}
+
+    except Exception as e:
+        logger.error(f"Error in webhook handler: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

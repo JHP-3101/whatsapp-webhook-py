@@ -71,10 +71,10 @@ class WebhookProcessor:
         else:
             logger.info("No messages in webhook payload to process")
 
-def get_webhook_processor(whatsapp_service: WhatsappService):
+def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)
 
-async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor):
+async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
     try:
         logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
 

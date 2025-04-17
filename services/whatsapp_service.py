@@ -3,7 +3,7 @@ import logging
 import httpx
 from globals import constants
 from fastapi import HTTPException
-from dotenv import load_dotenv  # <-- add this
+from dotenv import load_dotenv 
 
 # Load environment variables from .env
 load_dotenv()
@@ -64,6 +64,30 @@ class WhatsappService:
                 }
             }
         }
+        await self._post("messages", payload)
+        
+    async def send_member_menu(self, to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                                "type": "list",
+                "body": {"text": f"Halo! 👋🏻. Berikut adalah layanan Member yang tersedia:"},
+                "action": {
+                    "sections": [{
+                        "title": "Menu Member",
+                        "rows": [
+                            {"id": constants.MEMBER_MENU_INFO, "title": "Informasi Member"},
+                            {"id": constants.MEMBER_MENU_REGISTER, "title": "Daftar Member"},
+                            {"id": constants.MEMBER_MENU_CHECK_POINTS, "title": "Cek Poin Member"}
+                        ]
+                    }],
+                    "button": "Pilih Layanan Member"
+                }
+            }
+        }
+        
         await self._post("messages", payload)
 
     # Example of sending a template message (Illustrative)

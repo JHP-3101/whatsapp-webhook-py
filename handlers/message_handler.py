@@ -1,4 +1,3 @@
-# handlers/message_handler.py
 import logging
 from services.whatsapp_service import WhatsappService
 from globals import constants
@@ -25,15 +24,18 @@ class MessageHandler:
         interactive_type = interactive.get("type")
         if interactive_type == constants.LIST_REPLY:
             list_reply_id = interactive.get(constants.LIST_REPLY, {}).get("id")
+            
             if list_reply_id == constants.MEMBER:
                 response_text = "Anda memilih menu Member."
                 logger.info(f"Handling list reply for Member: {list_reply_id} from {from_no}")
                 await self.whatsapp_service.send_message(from_no, response_text)
+                
                 # Future: Trigger member-related logic here
             elif list_reply_id == constants.ON_DEV_1:
                 response_text = "Menu ini sedang dalam pengembangan."
                 logger.info(f"Handling list reply for On Development: {list_reply_id} from {from_no}")
                 await self.whatsapp_service.send_message(from_no, response_text)
+                
                 # Future: Indicate that this is under development
             else:
                 response_text = f"Anda memilih: {list_reply_id}"

@@ -1,4 +1,3 @@
-# controllers/webhook_controller.py
 import os
 import logging
 import json
@@ -67,7 +66,7 @@ class WebhookProcessor:
                 await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no)
             else:
                 logger.warning(f"Received unknown message type '{message_type}' from {from_no}")
-                await self.whatsapp_service.send_menu(from_no, username) # Default fallback
+                pass
         else:
             logger.info("No messages in webhook payload to process")
 

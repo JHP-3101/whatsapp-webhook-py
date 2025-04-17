@@ -2,8 +2,7 @@
 import os
 import logging
 import json
-from fastapi import HTTPException, Depends
-from dotenv import load_dotenv
+from fastapi import Depends, HTTPException
 from globals import constants
 from services.whatsapp_service import WhatsappService
 from handlers.message_handler import MessageHandler  # Import MessageHandler
@@ -71,10 +70,10 @@ class WebhookProcessor:
         else:
             logger.info("No messages in webhook payload to process")
 
-def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
+def get_webhook_processor(whatsapp_service: Depends = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)
 
-async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
+async def webhook_handler(payload: dict, webhook_processor: Depends = Depends(get_webhook_processor)):
     try:
         logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
 

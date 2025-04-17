@@ -2,6 +2,9 @@
 MEMBER = "member-menu"
 ON_DEV_1 = "on-dev-menu1"
 
+# Back To Main Menu
+BACK_TO_MAIN_MENU = "back-to-main"
+
 # Member Menu
 MEMBER_MENU_MAIN = "member-menu"
 MEMBER_MENU_INFO = "member-info"

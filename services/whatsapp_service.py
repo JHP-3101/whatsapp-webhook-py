@@ -72,15 +72,16 @@ class WhatsappService:
             "to": to,
             "type": "interactive",
             "interactive": {
-                                "type": "list",
-                "body": {"text": f"Halo! 👋🏻. Berikut adalah layanan Member yang tersedia:"},
+                "type": "list",
+                "body": {"text": f"Berikut adalah layanan Member yang tersedia:"},
                 "action": {
                     "sections": [{
                         "title": "Menu Member",
                         "rows": [
                             {"id": constants.MEMBER_MENU_INFO, "title": "Informasi Member"},
                             {"id": constants.MEMBER_MENU_REGISTER, "title": "Daftar Member"},
-                            {"id": constants.MEMBER_MENU_CHECK_POINTS, "title": "Cek Poin Member"}
+                            {"id": constants.MEMBER_MENU_CHECK_POINTS, "title": "Cek Poin Member"},
+                            {"id": constants.BACK_TO_MAIN_MENU, "title": "Main Menu"}
                         ]
                     }],
                     "button": "Pilih Layanan Member"

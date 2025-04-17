@@ -55,6 +55,10 @@ class MessageHandler:
                 await self.whatsapp_service.send_message(from_no, response_text)
                 # Logical Funtion To Check Member Points
             
+            elif list_reply_id == constants.BACK_TO_MAIN_MENU:
+                logger.info(f"User selected 'Kembali ke Menu Utama'. Sending main menu.")
+                await self.whatsapp_service.send_menu(from_no)
+            
             else:
                 response_text = f"Anda memilih: {list_reply_id}"
                 logger.warning(f"Unhandled list reply ID: {list_reply_id} from {from_no}")

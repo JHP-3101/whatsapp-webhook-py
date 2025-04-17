@@ -20,7 +20,7 @@ class MessageHandler:
             logger.info(f"Received unknown text message '{msg_body}' from {from_no}. Sending main menu.")
             await self.whatsapp_service.send_menu(from_no, username) # Default response
 
-    async def handle_interactive_message(self, interactive: dict, from_no: str):
+    async def handle_interactive_message(self, interactive: dict, from_no: str, username: str):
         interactive_type = interactive.get("type")
         if interactive_type == constants.LIST_REPLY:
             list_reply_id = interactive.get(constants.LIST_REPLY, {}).get("id")
@@ -57,7 +57,7 @@ class MessageHandler:
             
             elif list_reply_id == constants.BACK_TO_MAIN_MENU:
                 logger.info(f"User selected 'Kembali ke Menu Utama'. Sending main menu.")
-                await self.whatsapp_service.send_menu(from_no)
+                await self.whatsapp_service.send_menu(from_no, username)
             
             else:
                 response_text = f"Anda memilih: {list_reply_id}"

@@ -9,11 +9,11 @@ class MessageHandler:
         self.whatsapp_service = whatsapp_service
 
     async def handle_text_message(self, message: dict, from_no: str, username: str):
-        msg_body = message.get("text", {}).get("body", "").lower()
+        msg_body = message.get("text", {}).get("body", str).lower()
         if msg_body == "test":
             logger.info(f"Handling 'test' message from {from_no}")
             await self.whatsapp_service.send_message(from_no, "hello world!")
-        elif msg_body == str :
+        elif msg_body == str:
             logger.info(f"Received text message '{msg_body}' Sending main menu to {from_no}")
             await self.whatsapp_service.send_menu(from_no, username)
         else : 

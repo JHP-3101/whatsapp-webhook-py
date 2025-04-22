@@ -23,10 +23,15 @@ class MessageHandler:
             logger.info(f"Received text message '{msg_body}' - sending main menu to {from_no}")
             await self.whatsapp_service.send_menu(from_no, username)
 
-    async def handle_interactive_message(self, interactive: dict, from_no: str, username: str):
+    async def handle_interactive_message(self, interactive: dict, message: dict, from_no: str, username: str):
         interactive_type = interactive.get("type")
+        msg_body = message.get("text", {}).get("body", "").strip().lower()
+        
         if interactive_type == constants.LIST_REPLY:
             list_reply_id = interactive.get(constants.LIST_REPLY, {}).get("id")
+            if not msg_body:
+                logger.info(f"Empty message received from {from_no}, ignoring.")
+                return
             
             if list_reply_id == constants.MEMBER:
                 response_text = "Anda memilih menu Member."

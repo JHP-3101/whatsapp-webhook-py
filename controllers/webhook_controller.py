@@ -1,9 +1,10 @@
 import os
 import logging
 import json
-import time
+import asyncio
+from datetime import datetime
 from dotenv import load_dotenv 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, BackgroundTasks
 from globals import constants
 from services.whatsapp_service import WhatsappService
 from handlers.message_handler import MessageHandler  # Import MessageHandler
@@ -38,9 +39,13 @@ class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
-        self.user_state = {} # In-memory state management (for demonstration)
+        self.user_state = {
+                "last_message_time": datetime.utcnow(),
+                "reminder_task": None,
+                "goodbye_task": None,
+            } # In-memory state management (for demonstration)
 
-    async def process_webhook_entry(self, entry: dict):
+    async def process_webhook_entry(self, entry: dict, background_tasks: BackgroundTasks):
         changes = entry.get("changes", [{}])[0]
         value = changes.get("value", {})
 
@@ -52,54 +57,45 @@ class WebhookProcessor:
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
 
         messages = value.get("messages", [])
-        if not messages:
-            logger.info("No messages in webhook payload to process")
-            return
-        
-        message = messages[0]
-        from_no = message["from"]
-        message_type = message.get("type")
-        
-        now = time.time()
-        user_session = self.user_state.get(from_no, {})
-        last_active = user_session.get("last_active", now)
-        awaiting_confirmation = user_session.get("awaiting_confirmation", False)
-        
-        if awaiting_confirmation and now - last_active > 60:
-            logger.info(f"⌛ Timeout reached for {from_no}, sending goodbye message.")
-            await self.whatsapp_service.send_message(
-                from_no, 
-                "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-            )
-            self.user_state.pop(from_no, None)
-            return
+        if messages:
+            message = messages[0]
+            from_no = message["from"]
+            message_type = message.get("type")
 
-        else:
-            # 🟢 Update session activity
+            # Update last interaction time
+            now = datetime.utcnow()
             self.user_state[from_no] = {
-                "last_active": now,
-                "awaiting_confirmation": False
+                "last_message_time": now
             }
 
-            # 📩 Handle message
+            # Handle message type
             if message_type == constants.TEXT_MESSAGE:
-                body = message.get("text", {}).get("body", "").strip()
-                if body:
-                    logger.info(f"📨 Text message received from {from_no}: '{body}'")
-                    await self.message_handler.handle_text_message(message, from_no, username)
-
+                await self.message_handler.handle_text_message(message, from_no, username)
             elif message_type == constants.INTERACTIVE_MESSAGE:
-                logger.info(f"🎛️ Interactive message received from {from_no}")
                 await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
+            else:
+                logger.warning(f"Unknown message type '{message_type}' from {from_no}")
 
-            # ❓ Ask for follow-up input
-            await self.whatsapp_service.send_message(from_no, "Apakah ada lagi yang ingin disampaikan?")
-            self.user_state[from_no]["awaiting_confirmation"] = True
+            # Schedule follow-up and goodbye messages
+            background_tasks.add_task(self.delayed_message, from_no, username, 60, "Apakah ada lagi yang ingin disampaikan?")
+            background_tasks.add_task(self.delayed_message, from_no, username, 300, "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu.")
+        else:
+            logger.info("No messages in webhook payload to process")
+            
+    async def delayed_message(self, from_no: str, username: str, delay_seconds: int, message: str):
+        await asyncio.sleep(delay_seconds)
+
+        last_interaction = self.user_state.get(from_no, {}).get("last_message_time")
+        if last_interaction and (datetime.utcnow() - last_interaction).total_seconds() >= delay_seconds:
+            logger.info(f"⏱️ Sending delayed message to {from_no}: {message}")
+            await self.whatsapp_service.send_message(from_no, message)
+        else:
+            logger.info(f"🚫 Skipping delayed message to {from_no} — user already responded.")
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)
 
-async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
+async def webhook_handler(payload: dict, background_tasks: BackgroundTasks, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
     try:
         logger.info(f"📩 Webhook payload masuk:\n{json.dumps(payload, indent=2)}")
 
@@ -108,7 +104,7 @@ async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = D
             return {"message": "Invalid object"}
 
         entry = payload.get("entry", [{}])[0]
-        await webhook_processor.process_webhook_entry(entry)
+        await webhook_processor.process_webhook_entry(entry, background_tasks)
 
         return {"status": "success"}
 

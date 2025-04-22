@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+import time
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants
@@ -58,17 +59,42 @@ class WebhookProcessor:
         message = messages[0]
         from_no = message["from"]
         message_type = message.get("type")
+        
+        now = time.time()
+        user_session = self.user_state.get(from_no, {})
+        last_active = user_session.get("last_active", now)
+        awaiting_confirmation = user_session.get("awaiting_confirmation", False)
+        
+        if awaiting_confirmation and now - last_active > 60:
+            logger.info(f"⌛ Timeout reached for {from_no}, sending goodbye message.")
+            await self.whatsapp_service.send_message(
+                from_no, 
+                "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+            )
+            self.user_state.pop(from_no, None)
+            return
 
-            # Basic state management example:
-        if from_no not in self.user_state:
-            self.user_state[from_no] = {}
-
-        if message_type == constants.TEXT_MESSAGE:
-            await self.message_handler.handle_text_message(message, from_no, username)
-        elif message_type == constants.INTERACTIVE_MESSAGE:
-            await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
         else:
-            logger.warning(f"🤷 Unknown message type '{message_type}' from {from_no}, ignoring.")
+            # 🟢 Update session activity
+            self.user_state[from_no] = {
+                "last_active": now,
+                "awaiting_confirmation": False
+            }
+
+            # 📩 Handle message
+            if message_type == constants.TEXT_MESSAGE:
+                body = message.get("text", {}).get("body", "").strip()
+                if body:
+                    logger.info(f"📨 Text message received from {from_no}: '{body}'")
+                    await self.message_handler.handle_text_message(message, from_no, username)
+
+            elif message_type == constants.INTERACTIVE_MESSAGE:
+                logger.info(f"🎛️ Interactive message received from {from_no}")
+                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
+
+            # ❓ Ask for follow-up input
+            await self.whatsapp_service.send_message(from_no, "Apakah ada lagi yang ingin disampaikan?")
+            self.user_state[from_no]["awaiting_confirmation"] = True
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)

@@ -9,15 +9,19 @@ class MessageHandler:
         self.whatsapp_service = whatsapp_service
 
     async def handle_text_message(self, message: dict, from_no: str, username: str):
-        msg_body = message.get("text", {}).get("body", str).lower()
-        if msg_body == "test":
+        msg_body = message.get("text", {}).get("body", "").strip().lower()
+        
+        # Do nothing if messages empty
+        if not msg_body:
+            logger.info(f"Empty message received from {from_no}, ignoring.")
+            return
+        
+        if msg_body == "test31":
             logger.info(f"Handling 'test' message from {from_no}")
-            await self.whatsapp_service.send_message(from_no, "hello world!")
-        elif msg_body == str:
-            logger.info(f"Received text message '{msg_body}' Sending main menu to {from_no}")
+            await self.whatsapp_service.send_message(from_no, "This is developer testing code.")
+        else:
+            logger.info(f"Received text message '{msg_body}' - sending main menu to {from_no}")
             await self.whatsapp_service.send_menu(from_no, username)
-        else : 
-            logger.info(f"Received unknown text message '{msg_body}' from {from_no}. Sending main menu.")
 
     async def handle_interactive_message(self, interactive: dict, from_no: str, username: str):
         interactive_type = interactive.get("type")

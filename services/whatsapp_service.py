@@ -3,7 +3,7 @@ import logging
 import httpx
 from globals import constants
 from fastapi import HTTPException
-from dotenv import load_dotenv 
+from dotenv import load_dotenv  
 
 # Load environment variables from .env
 load_dotenv()

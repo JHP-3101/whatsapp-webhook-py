@@ -13,12 +13,11 @@ class MessageHandler:
         if msg_body == "test":
             logger.info(f"Handling 'test' message from {from_no}")
             await self.whatsapp_service.send_message(from_no, "hello world!")
-        elif msg_body == "menu":
-            logger.info(f"Sending main menu to {from_no}")
+        elif msg_body == str :
+            logger.info(f"Received text message '{msg_body}' Sending main menu to {from_no}")
             await self.whatsapp_service.send_menu(from_no, username)
-        else:
+        else : 
             logger.info(f"Received unknown text message '{msg_body}' from {from_no}. Sending main menu.")
-            await self.whatsapp_service.send_menu(from_no, username) # Default response
 
     async def handle_interactive_message(self, interactive: dict, from_no: str, username: str):
         interactive_type = interactive.get("type")

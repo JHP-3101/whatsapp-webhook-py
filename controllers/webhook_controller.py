@@ -1,7 +1,7 @@
 import os
 import logging
 import json
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants
 from services.whatsapp_service import WhatsappService

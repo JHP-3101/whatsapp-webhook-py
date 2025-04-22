@@ -51,24 +51,24 @@ class WebhookProcessor:
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
 
         messages = value.get("messages", [])
-        if messages:
-            message = messages[0]
-            from_no = message["from"]
-            message_type = message.get("type")
+        if not messages:
+            logger.info("No messages in webhook payload to process")
+            return
+        
+        message = messages[0]
+        from_no = message["from"]
+        message_type = message.get("type")
 
             # Basic state management example:
-            if from_no not in self.user_state:
-                self.user_state[from_no] = {}
+        if from_no not in self.user_state:
+            self.user_state[from_no] = {}
 
-            if message_type == constants.TEXT_MESSAGE:
-                await self.message_handler.handle_text_message(message, from_no, username)
-            elif message_type == constants.INTERACTIVE_MESSAGE:
-                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
-            else:
-                logger.warning(f"Received unknown message type '{message_type}' from {from_no}")
-                pass
+        if message_type == constants.TEXT_MESSAGE:
+            await self.message_handler.handle_text_message(message, from_no, username)
+        elif message_type == constants.INTERACTIVE_MESSAGE:
+            await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
         else:
-            logger.info("No messages in webhook payload to process")
+            logger.warning(f"🤷 Unknown message type '{message_type}' from {from_no}, ignoring.")
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)

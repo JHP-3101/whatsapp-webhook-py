@@ -73,8 +73,6 @@ class WebhookProcessor:
         session = self.user_sessions.get(from_no)
 
         if not session or not session.get("active"):
-            # New session or reactivated after timeout
-            await self.message_handler.handle_text_message(message, from_no, username)
             # Mark session as active and update the timestamp
             self.user_sessions[from_no] = {"last_active": now, "active": True}
 

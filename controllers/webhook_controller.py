@@ -1,8 +1,8 @@
 import os
 import logging
 import json
-import asyncio
-from datetime import datetime, timedelta
+import threading
+from datetime import datetime, timedelta, time
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants
@@ -41,23 +41,19 @@ class WebhookProcessor:
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.user_session = {} # Format: {phone: {"last_active": datetime, "active": bool}}
         
-        if not asyncio.get_event_loop().is_running():
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.cleanup_sessions())  # Or use asyncio.ensure_future
-        else:
-            asyncio.ensure_future(self.cleanup_sessions())
+        threading.Thread(target=self.cleanup_sessions, daemon=True).start()
         
-    async def cleanup_sessions(self):
+    def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
             for user, session in list(self.user_sessions.items()):
                 if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
-                    await self.whatsapp_service.send_message(
+                    self.whatsapp_service.send_message(
                         user,
                         "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
                     )
                     session["active"] = False
-            await asyncio.sleep(10)
+            time.sleep(10)  # Sleep to avoid overloading CPU
         
     async def process_webhook_entry(self, entry: dict):
         changes = entry.get("changes", [{}])[0]

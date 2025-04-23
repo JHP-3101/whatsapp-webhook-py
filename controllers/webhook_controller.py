@@ -51,20 +51,20 @@ class WebhookProcessor:
     async def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
-            logger.info(f"Checking sessions at {now}")
             
             async with self.lock:
-                for user, session in list(self.user_sessions.items()):
-                    if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
-                        
-                        await self.whatsapp_service.send_message(
-                            user,
-                            "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                        )
-                        logger.info(f"🔚 Session for {user} ended at {now.isoformat()}")
-                        del self.user_sessions[user]
-                        
-            await asyncio.sleep(60)  # Use asyncio.sleep instead of time.sleep
+                for user, session in list(self.user_sessions.items()):  
+                    if session.get("active") and not session.get("ended"):
+                        if now - session["last_active"] > timedelta(minutes=1):
+                            await self.whatsapp_service.send_message(
+                                user,
+                                "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                            )
+                            session["active"] = False
+                            session["ended"] = True
+                            logger.info(f"[Session] Ended session for {user} at {now.isoformat()}")
+                            
+            await asyncio.sleep(10)
         
     async def process_webhook_entry(self, entry: dict):
         await self.initialize()  # <-- Make sure everything is ready
@@ -89,7 +89,11 @@ class WebhookProcessor:
             if not session or not session.get("active"):
                 logger.info(f"[Session] Starting new session for {from_no}.")
 
-            self.user_sessions[from_no] = {"last_active": now, "active": True}
+            self.user_sessions[from_no] = {
+                "last_active": now,
+                "active": True,
+                "ended": False  # Reset session end flag when user sends a message
+            }
             logger.info(f"[Session] Updated session for {from_no} at {now.isoformat()}")
 
         if message_type == constants.TEXT_MESSAGE:

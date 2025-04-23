@@ -51,7 +51,6 @@ class WebhookProcessor:
     async def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
-            logger.info(f"Checking sessions at {now}")
             
             async with self.lock:
                 for user, session in list(self.user_sessions.items()):

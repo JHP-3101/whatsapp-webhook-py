@@ -75,15 +75,17 @@ class WebhookProcessor:
         if not session or not session.get("active"):
             # New session or reactivated after timeout
             await self.message_handler.handle_text_message(message, from_no, username)
-
-        # Update session
-        self.user_sessions[from_no] = {"last_active": now, "active": True}
+            # Mark session as active and update the timestamp
+            self.user_sessions[from_no] = {"last_active": now, "active": True}
 
         # Handle message types
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)
         elif message_type == constants.INTERACTIVE_MESSAGE:
             await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
+            
+        # Update session last active timestamp after processing
+        self.user_sessions[from_no]["last_active"] = now
 
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):

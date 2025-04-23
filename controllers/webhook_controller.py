@@ -51,6 +51,7 @@ class WebhookProcessor:
     async def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
+            logger.info(f"Checking sessions at {now}")
             
             async with self.lock:
                 for user, session in list(self.user_sessions.items()):
@@ -84,12 +85,12 @@ class WebhookProcessor:
         async with self.lock:
             session = self.user_sessions.get(from_no)
 
+            # Do not greet again
             if not session or not session.get("active"):
-                # New session or reactivated after timeout
-                pass
-            
-            # Update session
+                logger.info(f"[Session] Starting new session for {from_no}.")
+
             self.user_sessions[from_no] = {"last_active": now, "active": True}
+            logger.info(f"[Session] Updated session for {from_no} at {now.isoformat()}")
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)

@@ -3,6 +3,7 @@ import logging
 import json
 import threading
 import time
+import asyncio
 from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
@@ -41,57 +42,50 @@ class WebhookProcessor:
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.user_sessions = {} # Format: {phone: {"last_active": datetime, "active": bool}}
+        self.lock = asyncio.Lock()
         
-        threading.Thread(target=self.cleanup_sessions, daemon=True).start()
+        # Create the background task to cleanup sessions asynchronously
+        asyncio.create_task(self.cleanup_sessions())
         
-    def cleanup_sessions(self):
+    async def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
             logger.info(f"Checking sessions at {now}")
             
-            for user, session in list(self.user_sessions.items()):
-                if session.get("active"):
-                    last_active = session["last_active"]
-                    logger.info(f"User {user}: Last active at {last_active}")
-                    
-                    if now - last_active > timedelta(minutes=1):
-                        self.whatsapp_service.send_message(
+            async with self.lock:
+                for user, session in list(self.user_sessions.items()):
+                    if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
+                        
+                        await self.whatsapp_service.send_message(
                             user,
                             "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
                         )
-                        session["active"] = False
-                        logger.info(f"Session for {user} ended due to inactivity.")
                         
-            time.sleep(10)  # Sleep to avoid overloading CPU
+                        logger.info(f"Session for {user} ended due to inactivity.")
+                        session["active"] = False
+                        
+            await asyncio.sleep(10)  # Use asyncio.sleep instead of time.sleep
         
     async def process_webhook_entry(self, entry: dict):
-        changes = entry.get("changes", [{}])[0]
-        value = changes.get("value", {})
-        contacts = value.get("contacts", [])
-        messages = value.get("messages", [])
-        if not messages:
-            return
-
-        message = messages[0]
-        from_no = message["from"]
-        message_type = message.get("type")
-        username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
-
         now = datetime.utcnow()
-        session = self.user_sessions.get(from_no)
+        message = entry.get("message", {})
+        from_no = message["from"]
+        username = message.get("username", "Pelanggan")
 
-        if not session or not session.get("active"):
-            # Mark session as active and update the timestamp
-            self.user_sessions[from_no] = {"last_active": now, "active": True}
+        async with self.lock:
+            session = self.user_sessions.get(from_no)
 
-        # Handle message types
-        if message_type == constants.TEXT_MESSAGE:
-            await self.message_handler.handle_text_message(message, from_no, username)
-        elif message_type == constants.INTERACTIVE_MESSAGE:
-            await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
-            
-        # Update session last active timestamp after processing
-        self.user_sessions[from_no]["last_active"] = now
+            if not session or not session.get("active"):
+                # New session or reactivated after timeout
+                self.user_sessions[from_no] = {"last_active": now, "active": True}
+
+            # Handle message types and update session
+            self.user_sessions[from_no]["last_active"] = now
+            # Process the message types (e.g., TEXT_MESSAGE, INTERACTIVE_MESSAGE)
+            if message.get("type") == "text":
+                await self.message_handler.handle_text_message(message, from_no, username)
+            elif message.get("type") == "interactive":
+                await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
 
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):

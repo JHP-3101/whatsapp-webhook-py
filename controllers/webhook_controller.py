@@ -1,6 +1,8 @@
 import os
 import logging
 import json
+import asyncio
+from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants
@@ -37,38 +39,54 @@ class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
-        self.user_state = {} # In-memory state management (for demonstration)
+        self.user_session = {} # Format: {phone: {"last_active": datetime, "active": bool}}
+        asyncio.create_task(self.cleanup_sessions()) # Run the cleanup loop in the background
+        
+    async def cleanup_sessions(self):
+        while True:
+            now = datetime.utcnow()
+            to_remove = []
 
+            for user, session in self.user_sessions.items():
+                if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
+                    # Timeout reached: send goodbye message
+                    await self.whatsapp_service.send_message(
+                        user,
+                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                    )
+                    session["active"] = False
+
+            await asyncio.sleep(10)  # Check every 10 seconds
+        
     async def process_webhook_entry(self, entry: dict):
         changes = entry.get("changes", [{}])[0]
         value = changes.get("value", {})
-
-        if value.get("metadata", {}).get("phone_number_id") != self.whatsapp_service.phone_number_id:
-            logger.error("Phone number ID mismatch in webhook payload")
-            raise HTTPException(status_code=400, detail="Phone number ID does not match")
-
         contacts = value.get("contacts", [])
-        username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
-
         messages = value.get("messages", [])
         if not messages:
-            logger.info("No messages in webhook payload to process")
             return
-        
+
         message = messages[0]
         from_no = message["from"]
         message_type = message.get("type")
+        username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
 
-        # Basic state management example:
-        if from_no not in self.user_state:
-            self.user_state[from_no] = {}
+        now = datetime.utcnow()
+        session = self.user_sessions.get(from_no)
 
+        if not session or not session.get("active"):
+            # New session or reactivated after timeout
+            await self.message_handler.handle_text_message(message, from_no, username)
+
+        # Update session
+        self.user_sessions[from_no] = {"last_active": now, "active": True}
+
+        # Handle message types
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)
         elif message_type == constants.INTERACTIVE_MESSAGE:
             await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
-        else:
-            logger.warning(f"🤷 Unknown message type '{message_type}' from {from_no}, ignoring.")
+
 
 def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
     return WebhookProcessor(whatsapp_service)

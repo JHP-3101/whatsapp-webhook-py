@@ -86,7 +86,7 @@ class WebhookProcessor:
             session = self.user_sessions.get(from_no)
 
             # Do not greet again
-            if not session or not session.get("active"):
+            if not session or session.get("ended", False):
                 logger.info(f"[Session] Starting new session for {from_no}.")
 
             self.user_sessions[from_no] = {

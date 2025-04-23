@@ -54,7 +54,7 @@ class WebhookProcessor:
                     last_active = session["last_active"]
                     logger.info(f"User {user}: Last active at {last_active}")
                     
-                    if now - session["last_active"] > timedelta(minutes=1):
+                    if now - last_active > timedelta(minutes=1):
                         self.whatsapp_service.send_message(
                             user,
                             "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."

@@ -2,7 +2,8 @@ import os
 import logging
 import json
 import threading
-from datetime import datetime, timedelta, time
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants

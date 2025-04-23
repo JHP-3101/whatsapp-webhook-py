@@ -61,8 +61,7 @@ class WebhookProcessor:
                             user,
                             "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
                         )
-                        
-                        logger.info(f"Session for {user} ended due to inactivity.")
+                        logger.info(f"🔚 Session for {user} ended at {now.isoformat()}")
                         del self.user_sessions[user]
                         
             await asyncio.sleep(60)  # Use asyncio.sleep instead of time.sleep

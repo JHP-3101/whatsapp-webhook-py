@@ -39,7 +39,7 @@ class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
-        self.user_session = {} # Format: {phone: {"last_active": datetime, "active": bool}}
+        self.user_sessions = {} # Format: {phone: {"last_active": datetime, "active": bool}}
         
         threading.Thread(target=self.cleanup_sessions, daemon=True).start()
         

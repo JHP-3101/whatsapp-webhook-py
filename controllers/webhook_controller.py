@@ -40,23 +40,24 @@ class WebhookProcessor:
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.user_session = {} # Format: {phone: {"last_active": datetime, "active": bool}}
-        asyncio.create_task(self.cleanup_sessions()) # Run the cleanup loop in the background
+        
+        if not asyncio.get_event_loop().is_running():
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.cleanup_sessions())  # Or use asyncio.ensure_future
+        else:
+            asyncio.ensure_future(self.cleanup_sessions())
         
     async def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
-            to_remove = []
-
-            for user, session in self.user_sessions.items():
+            for user, session in list(self.user_sessions.items()):
                 if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
-                    # Timeout reached: send goodbye message
                     await self.whatsapp_service.send_message(
                         user,
                         "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
                     )
                     session["active"] = False
-
-            await asyncio.sleep(10)  # Check every 10 seconds
+            await asyncio.sleep(10)
         
     async def process_webhook_entry(self, entry: dict):
         changes = entry.get("changes", [{}])[0]

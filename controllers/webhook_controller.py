@@ -47,13 +47,21 @@ class WebhookProcessor:
     def cleanup_sessions(self):
         while True:
             now = datetime.utcnow()
+            logger.info(f"Checking sessions at {now}")
+            
             for user, session in list(self.user_sessions.items()):
-                if session.get("active") and now - session["last_active"] > timedelta(minutes=1):
-                    self.whatsapp_service.send_message(
-                        user,
-                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                    )
-                    session["active"] = False
+                if session.get("active"):
+                    last_active = session["last_active"]
+                    logger.info(f"User {user}: Last active at {last_active}")
+                    
+                    if now - session["last_active"] > timedelta(minutes=1):
+                        self.whatsapp_service.send_message(
+                            user,
+                            "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                        )
+                        session["active"] = False
+                        logger.info(f"Session for {user} ended due to inactivity.")
+                        
             time.sleep(10)  # Sleep to avoid overloading CPU
         
     async def process_webhook_entry(self, entry: dict):

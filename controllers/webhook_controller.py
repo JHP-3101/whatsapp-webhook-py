@@ -63,9 +63,9 @@ class WebhookProcessor:
                         )
                         
                         logger.info(f"Session for {user} ended due to inactivity.")
-                        session["active"] = False
+                        del self.user_sessions[user]
                         
-            await asyncio.sleep(10)  # Use asyncio.sleep instead of time.sleep
+            await asyncio.sleep(60)  # Use asyncio.sleep instead of time.sleep
         
     async def process_webhook_entry(self, entry: dict):
         await self.initialize()  # <-- Make sure everything is ready

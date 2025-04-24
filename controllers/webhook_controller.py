@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from globals import constants
 from services.whatsapp_service import WhatsappService
+from services.session_manager import SessionManager
 from handlers.message_handler import MessageHandler  # Import MessageHandler
 
 load_dotenv()
@@ -39,32 +40,14 @@ class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
-        self.user_sessions = {} # Format: {phone: {"last_active": datetime, "active": bool}}
-        self._initialized = False  # Prevent multiple inits
+        self.session_manager = SessionManager(self.on_session_end)
         
-    async def initialize(self):
-        if not self._initialized:
-            self.lock = asyncio.Lock()
-            asyncio.create_task(self.cleanup_sessions())
-            self._initialized = True
-        
-    async def cleanup_sessions(self):
-        while True:
-            now = datetime.utcnow()
-            
-            async with self.lock:
-                for user, session in list(self.user_sessions.items()):  
-                    if session.get("active") and not session.get("ended"):
-                        if now - session["last_active"] > timedelta(minutes=1):
-                            await self.whatsapp_service.send_message(
-                                user,
-                                "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                            )
-                            session["active"] = False
-                            session["ended"] = True
-                            logger.info(f"[Session] Ended session for {user} at {now.isoformat()}")
-                            
-            await asyncio.sleep(10)
+    async def on_session_end(self, phone_number):
+        await self.whatsapp_service.send_message(
+            phone_number,
+            "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+        )
+        logger.info(f"🕓 Session ended for {phone_number}")
         
     async def process_webhook_entry(self, entry: dict):
         await self.initialize()  # <-- Make sure everything is ready
@@ -81,20 +64,7 @@ class WebhookProcessor:
         message_type = message.get("type")
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
 
-        now = datetime.utcnow()
-        async with self.lock:
-            session = self.user_sessions.get(from_no)
-
-            # Do not greet again
-            if not session or session.get("ended", False):
-                logger.info(f"[Session] Starting new session for {from_no}.")
-
-            self.user_sessions[from_no] = {
-                "last_active": now,
-                "active": True,
-                "ended": False  # Reset session end flag when user sends a message
-            }
-            logger.info(f"[Session] Updated session for {from_no} at {now.isoformat()}")
+        await self.session_manager.update_session(from_no)
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)

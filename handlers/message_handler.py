@@ -1,14 +1,12 @@
 import logging
 from services.whatsapp_service import WhatsappService
-from services.session_manager import SessionManager
 from globals import constants
 
 logger = logging.getLogger(__name__)
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsappService, session_manager: SessionManager):
+    def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
-        self.session_manager = session_manager
 
     async def handle_text_message(self, message: dict, from_no: str, username: str):
         msg_body = message.get("text", {}).get("body", "").strip().lower()
@@ -16,14 +14,6 @@ class MessageHandler:
         # Do nothing if messages empty
         if not msg_body:
             logger.info(f"Empty message received from {from_no}, ignoring.")
-            return
-        
-        if self.session_manager.has_session_ended(from_no):
-            logger.info(f"⛔ Message from {from_no} after session ended. Sending goodbye message.")
-            await self.whatsapp_service.send_message(
-                from_no,
-                "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-            )
             return
         
         if msg_body == "test31":

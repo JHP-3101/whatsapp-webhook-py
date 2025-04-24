@@ -1,36 +1,45 @@
 import asyncio
+import threading
+import time
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SessionManager:
-    def __init__(self, on_session_end_callback):
-        self.sessions = {} #{phone_number: session_info}
-        self.on_session_end_callback = on_session_end_callback
-        self.lock = asyncio.Lock()
-        
-    async def update_session(self, phone_number):
-        now = datetime.utcnow()
-        async with self.lock:
-            session = self.sessions.get(phone_number)
-            if not session or session.get("ended"):
-                self.sessions[phone_number] = {
-                    "last_active": now,
-                    "active": True,
-                    "ended": False
-                }
-            else :
-                self.sessions[phone_number]["last_active"] = now
-                self.sessions[phone_number]["active"] = True
-                self.sessions[phone_number]["ended"] = False
-                
-            asyncio.create_task(self._schedule_end_session(phone_number))
-        
-    async def _schedule_end_session(self, phone_number):
-        await asyncio.sleep(60)
-        async with self.lock:
-            session = self.sessions.get(phone_number)
-            if session and not session["ended"]:
-                last_active = session["last_active"]
-                if datetime.utcnow() - last_active >= timedelta(minutes=1):
+    def __init__(self, whatsapp_service):
+        self.whatsapp_service = whatsapp_service
+        self.user_sessions = {}  # {user_id: {"last_active": datetime, "active": True, "ended": False}}
+        self.initialized = False
+
+    def initialize(self):
+        if not self.initialized:
+            logger.info("🟢 Initializing SessionManager...")
+            thread = threading.Thread(target=self._cleanup_sessions, daemon=True)
+            thread.start()
+            self.initialized = True
+
+    def _cleanup_sessions(self):
+        while True:
+            now = datetime.utcnow()
+            for user, session in list(self.user_sessions.items()):
+                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=1):
+                    asyncio.run(self.whatsapp_service.send_message(
+                        user,
+                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                    ))
                     session["active"] = False
                     session["ended"] = True
-                    await self.on_session_end_callback(phone_number)
+                    logger.info(f"🔴 Session ended for {user}")
+            time.sleep(5)  # or 10
+
+    def update_session(self, user_id):
+        now = datetime.utcnow()
+        self.user_sessions[user_id] = {
+            "last_active": now,
+            "active": True,
+            "ended": False
+        }
+
+    def is_session_active(self, user_id):
+        return self.user_sessions.get(user_id, {}).get("active", False)

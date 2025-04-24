@@ -42,12 +42,8 @@ class WebhookProcessor:
         self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.session_manager = SessionManager(self.on_session_end)
         
-    async def on_session_end(self, phone_number):
-        await self.whatsapp_service.send_message(
-            phone_number,
-            "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-        )
-        logger.info(f"🕓 Session ended for {phone_number}")
+    async def initialize(self):
+        self.session_manager.initialize()
         
     async def process_webhook_entry(self, entry: dict):
         await self.initialize()  # <-- Make sure everything is ready
@@ -64,7 +60,7 @@ class WebhookProcessor:
         message_type = message.get("type")
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
 
-        await self.session_manager.update_session(from_no)
+        self.session_manager.update_session(from_no)
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)

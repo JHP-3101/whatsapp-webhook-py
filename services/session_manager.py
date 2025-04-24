@@ -35,11 +35,22 @@ class SessionManager:
 
     def update_session(self, user_id):
         now = datetime.utcnow()
-        self.user_sessions[user_id] = {
-            "last_active": now,
-            "active": True,
-            "ended": False
-        }
+        session = self.user_sessions.get(user_id)
+
+        if session:
+            if not session.get("ended", False):
+                session["last_active"] = now
+                session["active"] = True
+                logger.info(f"🔄 Session refreshed for {user_id}")
+            else:
+                logger.info(f"⚠️ Session for {user_id} already ended. Skipping update.")
+        else:
+            self.user_sessions[user_id] = {
+                "last_active": now,
+                "active": True,
+                "ended": False
+            }
+            logger.info(f"🆕 New session created for {user_id}")
 
     def is_session_active(self, user_id):
         return self.user_sessions.get(user_id, {}).get("active", False)

@@ -59,8 +59,34 @@ class WebhookProcessor:
         from_no = message["from"]
         message_type = message.get("type")
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
+        
+        now = datetime.utcnow()
 
-        self.session_manager.update_session(from_no)
+        async with self.lock:
+            session = self.user_sessions.get(from_no)
+
+            if session:
+                if session["active"]:
+                    # ✅ Session is still active, update timestamp
+                    session["last_active"] = now
+                else:
+                    # ⛔️ Session already ended, treat this as a new session
+                    self.user_sessions[from_no] = {
+                        "last_active": now,
+                        "active": True
+                    }
+                    logger.info(f"🔁 Session restarted for {from_no}")
+                    await self.message_handler.handle_text_message(message, from_no, username)
+                    return  # ✅ Skip double-handling the message below
+            else:
+                # ✅ New session
+                self.user_sessions[from_no] = {
+                    "last_active": now,
+                    "active": True
+                }
+                logger.info(f"🆕 New session started for {from_no}")
+                await self.message_handler.handle_text_message(message, from_no, username)
+                return
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)

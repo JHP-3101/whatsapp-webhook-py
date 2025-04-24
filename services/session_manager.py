@@ -31,7 +31,7 @@ class SessionManager:
                     session["active"] = False
                     session["ended"] = True
                     logger.info(f"🔴 Session ended for {user}")
-            time.sleep(5)  # or 10
+            time.sleep(10)  # or 10
 
     def update_session(self, user_id):
         now = datetime.utcnow()

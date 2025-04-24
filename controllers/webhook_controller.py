@@ -39,8 +39,8 @@ def get_whatsapp_service():
 class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
-        self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
         self.session_manager = SessionManager(whatsapp_service)
+        self.message_handler = MessageHandler(whatsapp_service, self.session_manager) # Initialize MessageHandler
         
     async def initialize(self):
         self.session_manager.initialize()

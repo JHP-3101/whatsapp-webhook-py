@@ -37,9 +37,8 @@ class SessionManager:
         now = datetime.utcnow()
 
         # 🗑️ Explicitly delete the previous session if it exists
-        if user_id in self.user_sessions:
-            del self.user_sessions[user_id]
-            logger.info(f"🧹 Deleted previous session for {user_id}")
+        del self.user_sessions[user_id]
+        logger.info(f"🧹 Deleted previous session for {user_id}")
 
         # 🆕 Create new session
         self.user_sessions[user_id] = {

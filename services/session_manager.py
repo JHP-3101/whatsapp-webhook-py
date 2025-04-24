@@ -23,7 +23,7 @@ class SessionManager:
         while True:
             now = datetime.utcnow()
             for user, session in list(self.user_sessions.items()):
-                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=1):
+                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=5):
                     asyncio.run(self.whatsapp_service.send_message(
                         user,
                         "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."

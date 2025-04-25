@@ -1,56 +1,41 @@
-import asyncio
-import threading
-import time
-from datetime import datetime, timedelta
-import logging
+from threading import Timer
+from datetime import datetime
 
-logger = logging.getLogger(__name__)
+class Session:
+    def __init__(self, phone_number, on_timeout):
+        self.phone_number = phone_number
+        self.last_interaction = datetime.now()
+        self.timeout_task = None
+        self.on_timeout = on_timeout
+
+    def refresh(self):
+        self.last_interaction = datetime.now()
+        self.cancel_timeout()
+        self.schedule_timeout()
+
+    def schedule_timeout(self):
+        self.timeout_task = Timer(300, self.timeout)
+        self.timeout_task.start()
+
+    def cancel_timeout(self):
+        if self.timeout_task:
+            self.timeout_task.cancel()
+
+    def timeout(self):
+        self.on_timeout(self.phone_number)
 
 class SessionManager:
-    def __init__(self, whatsapp_service):
-        self.whatsapp_service = whatsapp_service
-        self.user_sessions = {}  # {user_id: {"last_active": datetime, "active": True, "ended": False}}
-        self.initialized = False
+    def __init__(self):
+        self.sessions = {}
 
-    def initialize(self):
-        if not self.initialized:
-            logger.info("🟢 Initializing SessionManager...")
-            thread = threading.Thread(target=self._cleanup_sessions, daemon=True)
-            thread.start()
-            self.initialized = True
+    def start_or_refresh_session(self, phone_number, on_timeout):
+        if phone_number not in self.sessions:
+            self.sessions[phone_number] = Session(phone_number, on_timeout)
+        self.sessions[phone_number].refresh()
 
-    def _cleanup_sessions(self):
-        while True:
-            now = datetime.utcnow()
-            for user, session in list(self.user_sessions.items()):
-                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=1):
-                    asyncio.run(self.whatsapp_service.send_message(
-                        user,
-                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                    ))
-                    session["active"] = False
-                    session["ended"] = True
-                    logger.info(f"🔴 Session ended for {user}")
-            time.sleep(10)  # or 10
-
-    def update_session(self, user_id):
-        now = datetime.utcnow()
-        session = self.user_sessions.get(user_id)
-
+    def end_session(self, phone_number):
+        session = self.sessions.pop(phone_number, None)
         if session:
-            if not session.get("ended", False):
-                session["last_active"] = now
-                session["active"] = True
-                logger.info(f"🔄 Session refreshed for {user_id}")
-            else:
-                logger.info(f"⚠️ Session for {user_id} already ended. Skipping update.")
-        else:
-            self.user_sessions[user_id] = {
-                "last_active": now,
-                "active": True,
-                "ended": False
-            }
-            logger.info(f"🆕 New session created for {user_id}")
+            session.cancel_timeout()
 
-    def is_session_active(self, user_id):
-        return self.user_sessions.get(user_id, {}).get("active", False)
+session_manager = SessionManager()

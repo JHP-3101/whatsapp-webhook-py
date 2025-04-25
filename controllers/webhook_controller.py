@@ -2,7 +2,6 @@ import os
 import logging
 import json
 import asyncio
-from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 from fastapi import Depends, HTTPException
 from globals import constants
@@ -39,14 +38,11 @@ def get_whatsapp_service():
 class WebhookProcessor:
     def __init__(self, whatsapp_service: WhatsappService):
         self.whatsapp_service = whatsapp_service
-        self.message_handler = MessageHandler(whatsapp_service) # Initialize MessageHandler
+        self.message_handler = MessageHandler(whatsapp_service)
         self.session_manager = SessionManager(whatsapp_service)
-        
-    async def initialize(self):
-        self.session_manager.initialize()
+        self.session_manager.initialize()  # <- move initialization here
         
     async def process_webhook_entry(self, entry: dict):
-        await self.initialize()  # <-- Make sure everything is ready
 
         changes = entry.get("changes", [{}])[0]
         value = changes.get("value", {})
@@ -60,7 +56,7 @@ class WebhookProcessor:
         message_type = message.get("type")
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
         
-        self.session_manager.update_session(from_no)
+        self.session_manager.start_or_refresh_session(from_no, self.send_goodbye_message)
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)
@@ -68,8 +64,20 @@ class WebhookProcessor:
             await self.message_handler.handle_interactive_message(message.get("interactive", {}), from_no, username)
 
 
-def get_webhook_processor(whatsapp_service: WhatsappService = Depends(get_whatsapp_service)):
-    return WebhookProcessor(whatsapp_service)
+def get_webhook_processor():
+    whatsapp_service = WhatsappService()
+    message_handler = MessageHandler(whatsapp_service)
+    session_manager = SessionManager()
+
+    def goodbye_callback(from_no: str):
+        asyncio.run(message_handler.send_goodbye_message(from_no))
+
+    return WebhookProcessor(
+        session_manager=session_manager,
+        message_handler=message_handler,
+        goodbye_callback=goodbye_callback
+    )
+
 
 async def webhook_handler(payload: dict, webhook_processor: WebhookProcessor = Depends(get_webhook_processor)):
     try:

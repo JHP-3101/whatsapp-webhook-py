@@ -68,3 +68,8 @@ class MessageHandler:
                 logger.warning(f"Unhandled list reply ID: {list_reply_id} from {from_no}")
                 await self.whatsapp_service.send_message(from_no, response_text)
         # Add handling for other interactive types (e.g., buttons) if needed
+        
+    async def send_goodbye_message(self, from_no: str):
+        goodbye_text = "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+        logger.info(f"Sending goodbye message to {from_no} due to session timeout.")
+        await self.whatsapp_service.send_message(from_no, goodbye_text)

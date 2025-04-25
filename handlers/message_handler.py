@@ -19,8 +19,6 @@ class MessageHandler:
         if msg_body == "test31":
             logger.info(f"Handling 'test' message from {from_no}")
             await self.whatsapp_service.send_message(from_no, "This is developer testing code.")
-        elif msg_body == "end":
-            await self.whatsapp_service.send_message(from_no, "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu.")
         else:
             logger.info(f"Received text message '{msg_body}' - sending main menu to {from_no}")
             await self.whatsapp_service.send_menu(from_no, username)

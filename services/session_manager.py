@@ -1,17 +1,14 @@
 import asyncio
 import threading
 import time
-import logging
 from datetime import datetime, timedelta
-from handlers.message_handler import MessageHandler
-
+import logging
 
 logger = logging.getLogger(__name__)
 
 class SessionManager:
-    def __init__(self, whatsapp_service, message_handler: MessageHandler):
+    def __init__(self, whatsapp_service):
         self.whatsapp_service = whatsapp_service
-        self.message_handler = message_handler
         self.user_sessions = {}  # {user_id: {"last_active": datetime, "active": True, "ended": False}}
         self.initialized = False
 
@@ -35,15 +32,13 @@ class SessionManager:
                     session["ended"] = True
                     logger.info(f"🔴 Session ended for {user}")
             time.sleep(10)  # or 10
-                    
 
     def update_session(self, user_id):
         now = datetime.utcnow()
 
         # 🗑️ Explicitly delete the previous session if it exists
-        if user_id in self.user_sessions:
-            del self.user_sessions[user_id]
-            logger.info(f"🧹 Deleted previous session for {user_id}")
+        del self.user_sessions[user_id]
+        logger.info(f"🧹 Deleted previous session for {user_id}")
 
         # 🆕 Create new session
         self.user_sessions[user_id] = {

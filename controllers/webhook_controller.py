@@ -36,11 +36,12 @@ def get_whatsapp_service():
 
 # Dependency Injection for WebhookProcessor
 class WebhookProcessor:
-    def __init__(self, whatsapp_service: WhatsappService):
+    def __init__(self, whatsapp_service: WhatsappService, session_manager: SessionManager, goodbye_callback):
         self.whatsapp_service = whatsapp_service
         self.message_handler = MessageHandler(whatsapp_service)
-        self.session_manager = SessionManager(whatsapp_service)
-        self.session_manager.initialize()  # <- move initialization here
+        self.session_manager = session_manager
+        self.goodbye_callback = goodbye_callback
+        self.session_manager.initialize()  # Initialize session manager
         
     async def process_webhook_entry(self, entry: dict):
 
@@ -56,7 +57,7 @@ class WebhookProcessor:
         message_type = message.get("type")
         username = contacts[0].get("profile", {}).get("name", "Pelanggan") if contacts else "Pelanggan"
         
-        self.session_manager.start_or_refresh_session(from_no, self.send_goodbye_message)
+        self.session_manager.start_or_refresh_session(from_no, self.goodbye_callback)
 
         if message_type == constants.TEXT_MESSAGE:
             await self.message_handler.handle_text_message(message, from_no, username)
@@ -66,15 +67,15 @@ class WebhookProcessor:
 
 def get_webhook_processor():
     whatsapp_service = WhatsappService()
-    message_handler = MessageHandler(whatsapp_service)
     session_manager = SessionManager()
 
+    # Goodbye callback function
     def goodbye_callback(from_no: str):
-        asyncio.run(message_handler.send_goodbye_message(from_no))
+        asyncio.run(MessageHandler(whatsapp_service).send_goodbye_message(from_no))
 
     return WebhookProcessor(
+        whatsapp_service=whatsapp_service,
         session_manager=session_manager,
-        message_handler=message_handler,
         goodbye_callback=goodbye_callback
     )
 

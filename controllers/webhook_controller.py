@@ -41,7 +41,6 @@ class WebhookProcessor:
         self.message_handler = MessageHandler(whatsapp_service)
         self.session_manager = session_manager
         self.goodbye_callback = goodbye_callback
-        self.session_manager.initialize()  # Initialize session manager
         
     async def process_webhook_entry(self, entry: dict):
 

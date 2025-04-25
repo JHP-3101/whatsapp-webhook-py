@@ -1,14 +1,17 @@
 import asyncio
 import threading
 import time
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from handlers.message_handler import MessageHandler
+
 
 logger = logging.getLogger(__name__)
 
 class SessionManager:
-    def __init__(self, whatsapp_service):
+    def __init__(self, whatsapp_service, message_handler: MessageHandler):
         self.whatsapp_service = whatsapp_service
+        self.message_handler = message_handler
         self.user_sessions = {}  # {user_id: {"last_active": datetime, "active": True, "ended": False}}
         self.initialized = False
 
@@ -24,13 +27,18 @@ class SessionManager:
             now = datetime.utcnow()
             for user, session in list(self.user_sessions.items()):
                 if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=5):
-                    asyncio.run(self.whatsapp_service.send_message(
-                        user,
-                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                    ))
+                    msg_body = ""
+                    asyncio.run(self.message_handler.handle_text_message(msg_body == "end"))
+                    
+                    # asyncio.run(self.whatsapp_service.send_message(
+                    #     user,
+                    #     "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                    # ))
                     session["active"] = False
                     session["ended"] = True
                     logger.info(f"🔴 Session ended for {user}")
+                    
+                    
             time.sleep(10)  # or 10
 
     def update_session(self, user_id):

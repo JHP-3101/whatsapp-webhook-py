@@ -26,20 +26,16 @@ class SessionManager:
         while True:
             now = datetime.utcnow()
             for user, session in list(self.user_sessions.items()):
-                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=5):
-                    msg_body = ""
-                    asyncio.run(self.message_handler.handle_text_message(msg_body == "end"))
-                    
-                    # asyncio.run(self.whatsapp_service.send_message(
-                    #     user,
-                    #     "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-                    # ))
+                if session.get("active") and not session.get("ended") and now - session["last_active"] > timedelta(minutes=1):
+                    asyncio.run(self.whatsapp_service.send_message(
+                        user,
+                        "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
+                    ))
                     session["active"] = False
                     session["ended"] = True
                     logger.info(f"🔴 Session ended for {user}")
-                    
-                    
             time.sleep(10)  # or 10
+                    
 
     def update_session(self, user_id):
         now = datetime.utcnow()

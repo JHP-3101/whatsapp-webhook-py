@@ -30,6 +30,13 @@ async def verify_webhook(request: Request):
     else:
         return Response(content="Bad Request", status_code=400)
 
+def safe_validate_phone_number_id(value: dict) -> bool:
+    received_phone_number_id = value.get("metadata", {}).get("phone_number_id")
+    if received_phone_number_id != PHONE_NUMBER_ID:
+        logger.warning(f"Phone number ID mismatch: received={received_phone_number_id}, expected={PHONE_NUMBER_ID}")
+        return False
+    return True
+
 @router.post("/webhook")
 async def webhook_handler(request: Request):
     try:
@@ -43,13 +50,8 @@ async def webhook_handler(request: Request):
         changes = entry.get("changes", [])[0]
         value = changes.get("value", {})
 
-        # Log phone number ID directly for debugging
-        phone_number_id = body.get("entry", [])[0].get("changes", [])[0].get("value", {}).get("metadata", {}).get("phone_number_id")
-        logger.info(f"Received phone_number_id: {phone_number_id}")
-        
         # Validate phone number ID
-        if value.get("metadata", {}).get("phone_number_id") != PHONE_NUMBER_ID:
-            return Response(content="Phone number ID does not match", status_code=400)
+        safe_validate_phone_number_id(value)
 
         # Handle messages
         messages = value.get("messages", [])

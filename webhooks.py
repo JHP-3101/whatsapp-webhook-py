@@ -6,8 +6,6 @@ import os
 
 load_dotenv()  # Load env variables from .env
 
-print(f"PHONE_NUMBER_ID: {os.getenv('PHONE_NUMBER_ID')}")
-
 app = FastAPI(
     title="WhatsApp Webhook Service",
     version="1.0.0",

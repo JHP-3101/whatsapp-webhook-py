@@ -11,9 +11,7 @@ logger = get_logger()
 load_dotenv()
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
-print(f"TOKEN_VERIFIER_WEBHOOK : ",TOKEN_VERIFIER_WEBHOOK)
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
-print(f"PHONE_NUMBER_ID : ",PHONE_NUMBER_ID)
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)

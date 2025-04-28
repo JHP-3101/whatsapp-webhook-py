@@ -1,5 +1,5 @@
 from services.whatsapp_service import WhatsAppService
-from globals.constants import MENU_1, MENU_2
+from globals import constants
 from core.logger import get_logger
 
 logger = get_logger()
@@ -16,9 +16,9 @@ class MessageHandler:
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         reply_id = interactive_data.get("list_reply", {}).get("id")
-        if reply_id == MENU_1:
+        if reply_id == constants.MENU_1:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu 1")
-        elif reply_id == MENU_2:
+        elif reply_id == constants.MENU_2:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu 2")
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")

@@ -1,14 +1,15 @@
 import os
 import httpx
 from core.logger import get_logger
+from dotenv import load_dotenv
+from globals import constants
 
 logger = get_logger()
 
+load_dotenv()
 TOKEN_META = os.getenv("TOKEN_META")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
-MENU_1 = "menu-1"
-MENU_2 = "menu-2"
 
 class WhatsAppService:
     BASE_URL = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
@@ -49,8 +50,8 @@ class WhatsAppService:
                         {
                             "title": "menu",
                             "rows": [
-                                {"id": MENU_1, "title": "MENU 1"},
-                                {"id": MENU_2, "title": "MENU 2"},
+                                {"id": constants.MENU_1, "title": "MENU 1"},
+                                {"id": constants.MENU_2, "title": "MENU 2"},
                             ],
                         }
                     ],

@@ -17,21 +17,17 @@ contact_handler = ContactHandler(whatsapp_service)
 
 @router.get("/webhook")
 async def verify_webhook(request: Request):
-    hub_mode: str = Query(None, alias="hub.mode"),
-    hub_challenge: str = Query(None, alias="hub.challenge"),
-    hub_verify_token: str = Query(None, alias="hub.verify_token")
-    logger.info(f"Verification attempt - Mode: {hub_mode}, Token: {hub_verify_token}")
+    mode = request.query_params.get("hub.mode")
+    challenge = request.query_params.get("hub.challenge")
+    verify_token = request.query_params.get("hub.verify_token")
 
-    if not all([hub_mode, hub_challenge, hub_verify_token]):
-        logger.error("Missing one or more verification parameters")
-        raise HTTPException(status_code=400, detail="Bad Request: Missing parameters")
-
-    if hub_mode == "subscribe" and hub_verify_token == TOKEN_VERIFIER_WEBHOOK:
-        logger.info("Webhook verified successfully")
-        return int(hub_challenge)
-
-    logger.error(f"Verification failed - Expected token: {TOKEN_VERIFIER_WEBHOOK}, Received: {hub_verify_token}")
-    raise HTTPException(status_code=403, detail="Forbidden")
+    if mode and verify_token:
+        if mode == "subscribe" and verify_token == TOKEN_VERIFIER_WEBHOOK:
+            return Response(content=challenge, status_code=200)
+        else:
+            return Response(content="Forbidden", status_code=403)
+    else:
+        return Response(content="Bad Request", status_code=400)
 
 @router.post("/webhook")
 async def webhook_handler(request: Request):

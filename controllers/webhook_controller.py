@@ -57,7 +57,12 @@ async def webhook_handler(request: Request):
         # Handle messages
         messages = value.get("messages", [])
         contacts = value.get("contacts", [])
-        username = await contact_handler.get_profile_name()
+        
+        # Handle contacts
+        if contacts:
+            for contact in contacts:
+                username = await contact_handler.get_profile_name(contact)
+                logger.info(f"Incoming message from profile: {username}")
 
         # Handle messages
         if messages:
@@ -69,11 +74,7 @@ async def webhook_handler(request: Request):
             elif message["type"] == "interactive":
                 await message_handler.handle_interactive_message(from_number, message["interactive"])
 
-        # Handle contacts
-        if contacts:
-            for contact in contacts:
-                profile_name = await contact_handler.get_profile_name(contact)
-                logger.info(f"Incoming message from profile: {profile_name}")
+
 
 
         return Response(content="Event received", status_code=200)

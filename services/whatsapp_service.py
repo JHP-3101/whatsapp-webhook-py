@@ -1,107 +1,70 @@
 import os
-import logging
 import httpx
-from globals import constants
-from fastapi import HTTPException
-from dotenv import load_dotenv  
+from app.core.logger import get_logger
 
-# Load environment variables from .env
-load_dotenv()
+logger = get_logger()
 
-# Konfigurasi logging
-logger = logging.getLogger(__name__)
+TOKEN_META = os.getenv("TOKEN_META")
+PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
-class WhatsappService:
+MENU_1 = "menu-1"
+MENU_2 = "menu-2"
+
+class WhatsAppService:
+    BASE_URL = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
+
     def __init__(self):
-        self.token = os.getenv("TOKEN_META")
-        self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
-        self.base_url = "https://graph.facebook.com/v20.0"
-    
-    async def _post(self, endpoint: str, payload: dict) :
-        url = f"{self.base_url}/{self.phone_number_id}/{endpoint}?access_token={self.token}"
-        headers = {"Content-Type": "application/json"}
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(url, json=payload, headers=headers, timeout=10) # Add timeout
-                response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
-                return response.json()
-            except httpx.HTTPError as e:
-                logger.error(f"WhatsApp API Error ({e.response.status_code if e.response else 'N/A'}): {e} - Endpoint: {endpoint}, Payload: {payload}")
-                raise HTTPException(status_code=500, detail=f"Failed to interact with WhatsApp API: {e}")
-            except httpx.TimeoutException as e:
-                logger.error(f"WhatsApp API Timeout Error: {e} - Endpoint: {endpoint}, Payload: {payload}")
-                raise HTTPException(status_code=504, detail="WhatsApp API request timed out")
-            except Exception as e:
-                logger.error(f"An unexpected error occurred during WhatsApp API call: {e} - Endpoint: {endpoint}, Payload: {payload}")
-                raise HTTPException(status_code=500, detail="Internal server error during WhatsApp API call")
-        
-    async def send_message(self, to: str, message: str):
+        self.headers = {"Content-Type": "application/json"}
+
+    async def send_message(self, phone_number: str, message: str):
         payload = {
             "messaging_product": "whatsapp",
-            "to": to,
+            "to": phone_number,
             "type": "text",
             "text": {"body": message},
         }
-        await self._post("messages", payload)
-        
-    async def send_menu(self, to: str, username: str = "Pelanggan"):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "interactive",
-            "interactive": {
-                "type": "list",
-                "body": {"text": f"Halo {username}! 👋🏻 🤗. Selamat datang di layanan Member Alfamidi. Silahkan pilih layanan yang anda butuhkan."},
-                "action": {
-                    "sections": [{
-                        "title": "Pilih Menu",
-                        "rows": [
-                            {"id": constants.MEMBER, "title": "Member"},
-                            {"id": constants.ON_DEV_1, "title": "Menu On Development"}
-                        ]
-                    }],
-                    "button": "Pilih Menu"
-                }
-            }
-        }
-        await self._post("messages", payload)
-        
-    async def send_member_menu(self, to: str):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "interactive",
-            "interactive": {
-                "type": "list",
-                "body": {"text": f"Berikut adalah layanan Member yang tersedia:"},
-                "action": {
-                    "sections": [{
-                        "title": "Menu Member",
-                        "rows": [
-                            {"id": constants.MEMBER_MENU_INFO, "title": "Informasi Member"},
-                            {"id": constants.MEMBER_MENU_REGISTER, "title": "Daftar Member"},
-                            {"id": constants.MEMBER_MENU_CHECK_POINTS, "title": "Cek Poin Member"},
-                            {"id": constants.BACK_TO_MAIN_MENU, "title": "Main Menu"}
-                        ]
-                    }],
-                    "button": "Pilih Layanan Member"
-                }
-            }
-        }
-        
-        await self._post("messages", payload)
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    f"{self.BASE_URL}?access_token={TOKEN_META}",
+                    json=payload,
+                    headers=self.headers,
+                )
+        except Exception as e:
+            logger.error(f"Send Message Error: {e}")
+            raise
 
-    # Example of sending a template message (Illustrative)
-    async def send_template_message(self, to: str, template_name: str, language_code: str, components: list = None):
+    async def send_menu(self, phone_number: str):
         payload = {
             "messaging_product": "whatsapp",
-            "to": to,
-            "type": "template",
-            "template": {
-                "name": template_name,
-                "language": {"code": language_code}
-            }
+            "to": phone_number,
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {
+                    "text": "menu utama. Silakan pilih layanan",
+                },
+                "action": {
+                    "sections": [
+                        {
+                            "title": "menu",
+                            "rows": [
+                                {"id": MENU_1, "title": "MENU 1"},
+                                {"id": MENU_2, "title": "MENU 2"},
+                            ],
+                        }
+                    ],
+                    "button": "Pilih Menu",
+                },
+            },
         }
-        if components:
-            payload["template"]["components"] = components
-        await self._post("messages", payload)
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    f"{self.BASE_URL}?access_token={TOKEN_META}",
+                    json=payload,
+                    headers=self.headers,
+                )
+        except Exception as e:
+            logger.error(f"Send Menu Error: {e}")
+            raise

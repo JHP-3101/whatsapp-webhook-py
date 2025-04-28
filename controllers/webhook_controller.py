@@ -4,12 +4,14 @@ from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
 from core.logger import get_logger
 import os
-
+         
 router = APIRouter()
 logger = get_logger()
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
+print(f"TOKEN_VERIFIER_WEBHOOK : ",TOKEN_VERIFIER_WEBHOOK)
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+print(f"PHONE_NUMBER_ID : ",PHONE_NUMBER_ID)
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)

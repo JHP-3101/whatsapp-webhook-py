@@ -6,6 +6,11 @@ import os
 
 load_dotenv()  # Load env variables from .env
 
+
+# Environment Variables
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", 3006))
+
 app = FastAPI(
     title="WhatsApp Webhook Service",
     version="1.0.0",
@@ -14,4 +19,4 @@ app = FastAPI(
 app.include_router(webhook_router)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=3006, reload=True)
+    uvicorn.run(app, host=HOST, port=PORT, reload=True)

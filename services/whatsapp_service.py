@@ -56,8 +56,8 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": constants.MEMBER, "title": "Member"},
-                            {"id": constants.ON_DEV_1, "title": "Menu On Development"}
+                            {"id": constants.MENU_1, "title": "MENU ON DEV 1"},
+                            {"id": constants.MENU_2, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"

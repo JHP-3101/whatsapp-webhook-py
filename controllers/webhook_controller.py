@@ -15,7 +15,6 @@ whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)
 contact_handler = ContactHandler(whatsapp_service)
 
-
 @router.get("/webhook")
 async def verify_webhook(request: Request):
     mode = request.query_params.get("hub.mode")
@@ -30,12 +29,12 @@ async def verify_webhook(request: Request):
     else:
         return Response(content="Bad Request", status_code=400)
 
-def safe_validate_phone_number_id(value: dict) -> bool:
-    received_phone_number_id = value.get("metadata", {}).get("phone_number_id")
-    if received_phone_number_id != PHONE_NUMBER_ID:
-        logger.warning(f"Phone number ID mismatch: received={received_phone_number_id}, expected={PHONE_NUMBER_ID}")
-        return False
-    return True
+# def safe_validate_phone_number_id(value: dict) -> bool:
+#     received_phone_number_id = value.get("metadata", {}).get("phone_number_id")
+#     if received_phone_number_id != PHONE_NUMBER_ID:
+#         logger.warning(f"Phone number ID mismatch: received={received_phone_number_id}, expected={PHONE_NUMBER_ID}")
+#         return False
+#     return True
 
 @router.post("/webhook")
 async def webhook_handler(request: Request):
@@ -51,7 +50,7 @@ async def webhook_handler(request: Request):
         value = changes.get("value", {})
 
         # Validate phone number ID
-        safe_validate_phone_number_id(value)
+        # safe_validate_phone_number_id(value)
 
         # Handle messages
         messages = value.get("messages", [])

@@ -2,6 +2,7 @@ import os
 import httpx
 from core.logger import get_logger
 from globals import constants
+from fastapi import HTTPException
 
 logger = get_logger()
 

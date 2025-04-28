@@ -57,7 +57,7 @@ async def webhook_handler(request: Request):
         # Handle messages
         messages = value.get("messages", [])
         contacts = value.get("contacts", [])
-        username = await contact_handler.get_profile_name(contact)
+        username = await contact_handler.get_profile_name()
 
         # Handle messages
         if messages:

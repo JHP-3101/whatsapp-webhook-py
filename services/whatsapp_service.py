@@ -51,6 +51,7 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
+                "body": {"text": f"Halo {username}! 👋🏻 🤗. Selamat datang di layanan Member Alfamidi. Silahkan pilih layanan yang anda butuhkan."},
                 "action": {
                     "sections": [{
                         "title": "Pilih Menu",

@@ -5,14 +5,15 @@ from core.logger import get_logger
 logger = get_logger()
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsAppService):
+    def __init__(self, whatsapp_service: WhatsAppService, ):
         self.whatsapp_service = whatsapp_service
+        self.last_timestamps = {}
 
     async def handle_text_message(self, from_number: str, text: str, username: str):
         if text.lower() == "test":
             await self.whatsapp_service.send_message(from_number, "hello world!")
         else:
-            await self.whatsapp_service.send_menu(from_number, username)
+            await self.whatsapp_service.send_main_menu(from_number, username)
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         reply_id = interactive_data.get("list_reply", {}).get("id")

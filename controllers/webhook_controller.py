@@ -42,7 +42,8 @@ def safe_validate_phone_number_id(value: dict) -> bool:
 async def webhook_handler(request: Request):
     try:
         body = await request.json()
-        logger.info(f"Received webhook body: {body}")
+        # Know The Body Of The Messages
+        # logger.info(f"Received webhook body: {body}") 
 
         if not body.get("object"):
             return Response(content="Invalid object", status_code=200)
@@ -54,7 +55,7 @@ async def webhook_handler(request: Request):
         # Validate phone number ID
         safe_validate_phone_number_id(value)
 
-        # Handle messages
+        # Get the value of messages and contacts
         messages = value.get("messages", [])
         contacts = value.get("contacts", [])
         
@@ -73,9 +74,6 @@ async def webhook_handler(request: Request):
                 await message_handler.handle_text_message(from_number, message["text"]["body"], username)
             elif message["type"] == "interactive":
                 await message_handler.handle_interactive_message(from_number, message["interactive"])
-
-
-
 
         return Response(content="Event received", status_code=200)
 

@@ -2,8 +2,11 @@ import uvicorn
 from fastapi import FastAPI
 from controllers.webhook_controller import router as webhook_router
 from dotenv import load_dotenv
+import os
 
 load_dotenv()  # Load env variables from .env
+
+print(f"PHONE_NUMBER_ID: {os.getenv('PHONE_NUMBER_ID')}")
 
 app = FastAPI(
     title="WhatsApp Webhook Service",

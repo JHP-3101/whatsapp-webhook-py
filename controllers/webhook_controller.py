@@ -57,6 +57,7 @@ async def webhook_handler(request: Request):
         # Handle messages
         messages = value.get("messages", [])
         contacts = value.get("contacts", [])
+        username = await contact_handler.get_profile_name(contact)
 
         # Handle messages
         if messages:
@@ -64,7 +65,7 @@ async def webhook_handler(request: Request):
             from_number = message.get("from")
 
             if message["type"] == "text":
-                await message_handler.handle_text_message(from_number, message["text"]["body"])
+                await message_handler.handle_text_message(from_number, message["text"]["body"], username)
             elif message["type"] == "interactive":
                 await message_handler.handle_interactive_message(from_number, message["interactive"])
 

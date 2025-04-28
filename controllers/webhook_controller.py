@@ -3,10 +3,12 @@ from services.whatsapp_service import WhatsAppService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
 from core.logger import get_logger
+from dotenv import load_dotenv
 import os
-         
+
 router = APIRouter()
 logger = get_logger()
+load_dotenv()
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 print(f"TOKEN_VERIFIER_WEBHOOK : ",TOKEN_VERIFIER_WEBHOOK)

@@ -6,7 +6,6 @@ import os
 
 load_dotenv()  # Load env variables from .env
 
-
 # Environment Variables
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 3006))

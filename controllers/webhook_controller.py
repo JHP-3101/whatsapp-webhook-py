@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Response
 from services.whatsapp_service import WhatsAppService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
+from services.session_manager import SessionManager
 from core.logger import get_logger
 from dotenv import load_dotenv
 import os
@@ -14,7 +15,8 @@ TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 whatsapp_service = WhatsAppService()
-message_handler = MessageHandler(whatsapp_service)
+session_manager = SessionManager()
+message_handler = MessageHandler(whatsapp_service, session_manager)
 contact_handler = ContactHandler(whatsapp_service)
 
 @router.get("/webhook")

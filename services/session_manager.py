@@ -15,7 +15,7 @@ class SessionManager:
 
     async def update_last_timestamp(self, wa_id: str, timestamp: int):
         await self.connect()
-        await self.redis.set(f"last_timestamp:{wa_id}", timestamp, ex=3600)  # 1 hour expiration
+        await self.redis.set(f"last_timestamp:{wa_id}", timestamp, ex=300)  # 1 hour expiration
 
     async def get_all_sessions(self):
         await self.connect()

@@ -7,7 +7,7 @@ import time
 logger = get_logger()
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsAppService, session_manager: SessionManager, session_timeout: int = 300):
+    def __init__(self, whatsapp_service: WhatsAppService, session_manager: SessionManager, session_timeout: int = 60):
         self.whatsapp_service = whatsapp_service
         self.last_timestamps = {}
         self.session_manager = session_manager

@@ -11,9 +11,9 @@ class MessageHandler:
         self.whatsapp_service = whatsapp_service
         self.session_manager = session_manager
 
-    
     async def handle_text_message(self, from_number: str, text: str, username: str):
         ttl = await self.session_manager.get_ttl(from_number)
+        ttl = None
 
         if ttl == -2:
             # Session has expired (key doesn't exist anymore)

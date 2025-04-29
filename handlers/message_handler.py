@@ -17,6 +17,8 @@ class MessageHandler:
         has_session = await self.session_manager.has_session(from_number)
         ttl = await self.session_manager.get_ttl(from_number)
 
+        logger.info(f"TTL for {from_number} is {ttl} seconds")
+        
         if not has_session or ttl == -2:
             if has_session:
                 # Session expired (user was active before)

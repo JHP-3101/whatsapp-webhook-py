@@ -14,7 +14,9 @@ class SessionManager:
             
     async def get_ttl(self, wa_id: str) -> int :
         await self.connect()
-        return await self.redis.ttl(f"last_timestamp:{wa_id}")
+        ttl = await self.redis.ttl(f"last_timestamp:{wa_id}")
+        logger.info(f"[SessionManager] TTL for {wa_id} is {ttl}")
+        return ttl
     
     async def has_session(self, wa_id: str) -> bool:
         await self.connect()

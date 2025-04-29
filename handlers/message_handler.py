@@ -14,23 +14,23 @@ class MessageHandler:
         self.session_timeout = session_timeout
     
     async def handle_text_message(self, from_number: str, text: str, username: str):
-        current_time = int(time.time())
-        last_timestamp = await self.session_manager.get_last_timestamp(from_number)
+        has_session = await self.session_manager.has_session(from_number)
+        ttl = await self.session_manager.get_ttl(from_number)
 
-        if last_timestamp and (current_time > last_timestamp):
+        if not has_session or ttl == -2:
+            if has_session:
+                # Session expired (user was active before)
+                logger.info(f"Session expired for {from_number}")
+                await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
+
+            # Start new session
             logger.info(f"Starting new session for {from_number}")
-            await self.session_manager.update_last_timestamp(from_number, current_time)
+            await self.session_manager.update_last_timestamp(from_number)
             await self.whatsapp_service.send_main_menu(from_number, username)
             return
 
-        if not last_timestamp:
-            logger.info(f"Session expired for {from_number}")
-            await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
-            await self.session_manager.delete_session(from_number)
-            return
-
-        # User still active session
-        await self.session_manager.update_last_timestamp(from_number, current_time)
+        # Session still active — refresh timestamp
+        await self.session_manager.update_last_timestamp(from_number)
         
         if text.lower() == "test":
             await self.whatsapp_service.send_message(from_number, "hello world!")

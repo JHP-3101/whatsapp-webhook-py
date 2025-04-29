@@ -1,5 +1,6 @@
 import aioredis
 from core.logger import get_logger
+import time
 
 logger = get_logger()
 
@@ -10,6 +11,14 @@ class SessionManager:
     async def connect(self):
         if not self.redis:
             self.redis = await aioredis.from_url("redis://localhost")
+            
+    async def get_ttl(self, wa_id: str) -> int :
+        await self.connect()
+        return await self.redis.ttl(f"last_timestamp:{wa_id}")
+    
+    async def has_session(self, wa_id: str) -> bool:
+        await self.connect()
+        return await self.redis.exists(f"last_timestamp:{wa_id}") == 1
 
     async def get_last_timestamp(self, wa_id: str):
         await self.connect()
@@ -24,12 +33,11 @@ class SessionManager:
             logger.info(f"[SessionManager] No session found for {wa_id}. TTL={ttl}")
             return None
 
-    async def update_last_timestamp(self, wa_id: str, timestamp: int):
+    async def update_last_timestamp(self, wa_id: str):
         await self.connect()
         key = f"last_timestamp:{wa_id}"
-        await self.redis.set(key, timestamp, ex=60)  # 1 hour expiration
-        ttl = await self.redis.ttl(key)
-        logger.info(f"[SessionManager] Updated session for {wa_id}: timestamp={timestamp}, new ttl={ttl} seconds")
+        current_time = int(time.time())
+        await self.redis.set(key, current_time, ex=60)  
 
     async def get_all_sessions(self):
         await self.connect()

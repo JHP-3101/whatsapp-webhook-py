@@ -13,7 +13,7 @@ class MessageHandler:
 
     async def handle_text_message(self, from_number: str, text: str, username: str):
         ttl = await self.session_manager.get_ttl(from_number)
-        ttl = None
+        ttl = 0
 
         if ttl == -2:
             # Session has expired (key doesn't exist anymore)
@@ -21,14 +21,14 @@ class MessageHandler:
             await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
             return
 
-        if ttl == -1:
-            # Key exists but no expiry (should not happen)
-            logger.warning(f"Session for {from_number} exists but has no TTL.")
-            await self.session_manager.update_last_timestamp(from_number)
+        # if ttl == -1:
+        #     # Key exists but no expiry (should not happen)
+        #     logger.warning(f"Session for {from_number} exists but has no TTL.")
+        #     await self.session_manager.update_last_timestamp(from_number)
 
-        elif ttl >= 0:
-            # Session is still active
-            await self.session_manager.update_last_timestamp(from_number)
+        # elif ttl >= 0:
+        #     # Session is still active
+        #     await self.session_manager.update_last_timestamp(from_number)
         
         if text.lower() == "test":
             await self.whatsapp_service.send_message(from_number, "hello world!")

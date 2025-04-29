@@ -17,18 +17,16 @@ class MessageHandler:
         current_time = int(time.time())
         last_timestamp = await self.session_manager.get_last_timestamp(from_number)
 
-        if last_timestamp and (current_time > last_timestamp + self.session_timeout):
-            # Session expired
-            logger.info(f"Session expired for {from_number}")
-            await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
-            await self.session_manager.delete_session(from_number)
-            return
-
-        if not last_timestamp:
-            # First time talking (no session yet)
+        if last_timestamp and (current_time > last_timestamp):
             logger.info(f"Starting new session for {from_number}")
             await self.session_manager.update_last_timestamp(from_number, current_time)
             await self.whatsapp_service.send_main_menu(from_number, username)
+            return
+
+        if not last_timestamp:
+            logger.info(f"Session expired for {from_number}")
+            await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
+            await self.session_manager.delete_session(from_number)
             return
 
         # User still active session

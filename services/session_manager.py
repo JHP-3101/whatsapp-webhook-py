@@ -1,4 +1,5 @@
 import aioredis
+import time
 
 class SessionManager:
     def __init__(self):
@@ -17,9 +18,10 @@ class SessionManager:
         result = await self.redis.get(f"last_timestamp:{wa_id}")
         return int(result) if result else None
 
-    async def update_last_timestamp(self, wa_id: str, timestamp: int):
+    async def update_last_timestamp(self, wa_id: str):
         await self.connect()
-        await self.redis.set(f"last_timestamp:{wa_id}", timestamp, ex=60)
+        current_time = int(time.time())
+        await self.redis.set(f"last_timestamp:{wa_id}", current_time, ex=60)
 
     async def get_all_sessions(self):
         await self.connect()

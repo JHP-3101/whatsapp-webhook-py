@@ -1,5 +1,4 @@
 import aioredis
-import time
 
 class SessionManager:
     def __init__(self):
@@ -8,20 +7,15 @@ class SessionManager:
     async def connect(self):
         if not self.redis:
             self.redis = await aioredis.from_url("redis://localhost")
-            
-    async def get_ttl(self, wa_id: str) -> int:
-        await self.connect()
-        return await self.redis.ttl(f"last_timestamp:{wa_id}")
 
     async def get_last_timestamp(self, wa_id: str):
         await self.connect()
         result = await self.redis.get(f"last_timestamp:{wa_id}")
         return int(result) if result else None
 
-    async def update_last_timestamp(self, wa_id: str):
+    async def update_last_timestamp(self, wa_id: str, timestamp: int):
         await self.connect()
-        current_time = int(time.time())
-        await self.redis.set(f"last_timestamp:{wa_id}", current_time, ex=60)
+        await self.redis.set(f"last_timestamp:{wa_id}", timestamp, ex=300)  # 1 hour expiration
 
     async def get_all_sessions(self):
         await self.connect()

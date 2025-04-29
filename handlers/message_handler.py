@@ -29,13 +29,13 @@ class MessageHandler:
             await self.whatsapp_service.send_main_menu(from_number, username)
             return
 
-        # Session still active — refresh timestamp
-        await self.session_manager.update_last_timestamp(from_number)
+        # # Session still active — refresh timestamp
+        # await self.session_manager.update_last_timestamp(from_number)
         
-        if text.lower() == "test":
-            await self.whatsapp_service.send_message(from_number, "hello world!")
-        else:
-            await self.whatsapp_service.send_main_menu(from_number, username)
+        # if text.lower() == "test":
+        #     await self.whatsapp_service.send_message(from_number, "hello world!")
+        # else:
+        #     await self.whatsapp_service.send_main_menu(from_number, username)
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         current_time = int(time.time())

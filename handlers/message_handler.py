@@ -22,9 +22,6 @@ class MessageHandler:
             logger.info(f"Session expired for {from_number}")
             await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
             await self.session_manager.delete_session(from_number)
-            # Start new session
-            await self.session_manager.update_last_timestamp(from_number, current_time)
-            await self.whatsapp_service.send_main_menu(from_number, username)
             return
 
         if not last_timestamp:
@@ -51,9 +48,6 @@ class MessageHandler:
             logger.info(f"Session expired for {from_number}")
             await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
             await self.session_manager.delete_session(from_number)
-            # Start new session
-            await self.session_manager.update_last_timestamp(from_number, current_time)
-            # optional: you can redirect user to main menu or just stop
             return
 
         if not last_timestamp:

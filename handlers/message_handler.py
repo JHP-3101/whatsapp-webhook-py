@@ -12,13 +12,6 @@ class MessageHandler:
         self.whatsapp_service = whatsapp_service
         self.session_manager = session_manager
         
-    async def on_session_expired(self, from_number: str):
-        logger.info(f"[MessageHandler] Session expired for {from_number}. Sending goodbye message.")
-        await self.whatsapp_service.send_message(
-            from_number,
-            "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!"
-        )
-
     async def handle_text_message(self, from_number: str, text: str, username: str):
         
         if text.strip().lower() == "test":

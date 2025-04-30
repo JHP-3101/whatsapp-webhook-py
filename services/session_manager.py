@@ -85,7 +85,7 @@ class SessionManager:
                     wa_id = key.decode().split(":")[-1]
                     ttl = await self.update_last_timestamp(wa_id)
 
-                    if ttl == -2 or ttl == -1 and keys == 0:
+                    if ttl == -2 or ttl == -1 and not keys:
                         logger.info(f"[TTLWatcher] Session expired for {wa_id}")
                         await self.delete_session(wa_id)
                         await on_expire_callback(wa_id)

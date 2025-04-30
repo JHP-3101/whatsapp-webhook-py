@@ -11,6 +11,13 @@ class MessageHandler:
     def __init__(self, whatsapp_service: WhatsAppService, session_manager: SessionManager):
         self.whatsapp_service = whatsapp_service
         self.session_manager = session_manager
+        
+    async def on_session_expired(self, from_number: str):
+        logger.info(f"[MessageHandler] Session expired for {from_number}. Sending goodbye message.")
+        await self.whatsapp_service.send_message(
+            from_number,
+            "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!"
+        )
 
     async def handle_text_message(self, from_number: str, text: str, username: str):
         
@@ -21,7 +28,7 @@ class MessageHandler:
 
         # Active session, update TTL
         await self.session_manager.update_last_timestamp(from_number)
-        await self.session_manager.start_ttl_watcher(interval_seconds=60)
+        await self.session_manager.start_ttl_watcher(self.on_session_expired, interval_seconds=60)
 
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):

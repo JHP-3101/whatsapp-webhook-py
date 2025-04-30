@@ -22,6 +22,7 @@ class MessageHandler:
         if not has_session or ttl == -2:
             if has_session:
                 # Session expired (user was active before)
+                await self.session_manager.update_last_timestamp(from_number)
                 logger.info(f"Session expired for {from_number}")
                 await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
 

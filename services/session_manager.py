@@ -1,14 +1,12 @@
 import aioredis
 from core.logger import get_logger
-from services.whatsapp_service import WhatsAppService
 import time
 import asyncio
 
 logger = get_logger()
 
 class SessionManager:
-    def __init__(self, whatsapp_service: WhatsAppService, redis_url: str = "redis://localhost", session_ttl: int = 60):
-        self.whatsapp_service = whatsapp_service
+    def __init__(self, redis_url: str = "redis://localhost", session_ttl: int = 60):
         self.redis = None
         self.redis_url = redis_url
         self.session_ttl = session_ttl

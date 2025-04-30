@@ -44,7 +44,7 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
 
-    async def send_main_menu(self, to: str, username: str = "Pelanggan"):
+    async def send_menu(self, to: str, username: str = "Pelanggan"):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,

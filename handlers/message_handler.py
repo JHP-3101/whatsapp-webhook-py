@@ -20,28 +20,28 @@ class MessageHandler:
         logger.info(f"TTL for {from_number} is {ttl} seconds")
         
         if not has_session or ttl == -2:
-            print("23")
             if has_session:
-                print("25")
                 # Session expired (user was active before)
                 logger.info(f"Session expired for {from_number}")
                 await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
+        
+            
+            await self.session_manager.update_last_timestamp(from_number)
+            logger.info(f"Update TTL for {from_number} is {ttl} seconds")
 
-            print("30")
             # Start new session
             logger.info(f"Starting new session for {from_number}")
             await self.session_manager.update_last_timestamp(from_number)
             await self.whatsapp_service.send_main_menu(from_number, username)
             return
 
-        print("37")
         # Session still active — refresh timestamp
         await self.session_manager.update_last_timestamp(from_number)
         
-        # if text.lower() == "test":
-        #     await self.whatsapp_service.send_message(from_number, "hello world!")
-        # else:
-        #     await self.whatsapp_service.send_main_menu(from_number, username)
+        if text.lower() == "test":
+            await self.whatsapp_service.send_message(from_number, "hello world!")
+        else:
+            await self.whatsapp_service.send_main_menu(from_number, username)
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         current_time = int(time.time())

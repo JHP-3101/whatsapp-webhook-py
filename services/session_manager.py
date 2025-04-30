@@ -80,12 +80,18 @@ class SessionManager:
             while True:
                 await asyncio.sleep(interval_seconds)
                 keys = await self.get_all_sessions()
+                
+                if not keys:
+                    logger.info("[TTLWatcher] No active sessions found")
+                    continue
 
                 for key in keys:
                     wa_id = key.decode().split(":")[-1]
                     ttl = await self.get_ttl(wa_id)
+                    
+                    logger.info(f"[TTLWatcher] TTL for {wa_id} is {ttl} seconds")
 
-                    if ttl == -2 or ttl == -1 or not keys:
+                    if ttl == -2 or ttl == -1:
                         logger.info(f"[TTLWatcher] Session expired for {wa_id}")
                         await self.delete_session(wa_id)
                         await on_expire_callback(wa_id)

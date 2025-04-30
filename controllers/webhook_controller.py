@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request, Response
 from services.whatsapp_service import WhatsAppService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
-from services.session_manager import SessionManager
 from core.logger import get_logger
 from dotenv import load_dotenv
 import os
@@ -15,8 +14,7 @@ TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 
 whatsapp_service = WhatsAppService()
-session_manager = SessionManager()
-message_handler = MessageHandler(whatsapp_service, session_manager)
+message_handler = MessageHandler(whatsapp_service)
 contact_handler = ContactHandler(whatsapp_service)
 
 @router.get("/webhook")
@@ -44,7 +42,8 @@ def safe_validate_phone_number_id(value: dict) -> bool:
 async def webhook_handler(request: Request):
     try:
         body = await request.json()
-        logger.info(f"Received webhook body: {body}")
+        # Know The Body Of The Messages
+        # logger.info(f"Received webhook body: {body}") 
 
         if not body.get("object"):
             return Response(content="Invalid object", status_code=200)
@@ -56,7 +55,7 @@ async def webhook_handler(request: Request):
         # Validate phone number ID
         safe_validate_phone_number_id(value)
 
-        # Handle messages
+        # Get the value of messages and contacts
         messages = value.get("messages", [])
         contacts = value.get("contacts", [])
         
@@ -75,9 +74,6 @@ async def webhook_handler(request: Request):
                 await message_handler.handle_text_message(from_number, message["text"]["body"], username)
             elif message["type"] == "interactive":
                 await message_handler.handle_interactive_message(from_number, message["interactive"])
-
-
-
 
         return Response(content="Event received", status_code=200)
 

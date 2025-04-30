@@ -70,7 +70,7 @@ class SessionManager:
         await self.redis.delete(key)
         logger.info(f"[SessionManager] Deleted session for {wa_id}")
         
-    async def _start_auto_refresh(self, wa_id: str, interval_seconds: int = 60):
+    async def _start_auto_refresh(self, wa_id: str, interval_seconds: int = 300):
         logger.info(f"[AutoRefresh] Starting auto-refresh for {wa_id}")
         try:
             while await self.has_session(wa_id):
@@ -80,7 +80,7 @@ class SessionManager:
         except asyncio.CancelledError:
             logger.info(f"[AutoRefresh] Auto-refresh cancelled for {wa_id}")
 
-    async def start_auto_refresh(self, wa_id: str, interval_seconds: int = 60):
+    async def start_auto_refresh(self, wa_id: str, interval_seconds: int = 300):
         if wa_id not in self.refresh_tasks:
             task = asyncio.create_task(self._start_auto_refresh(wa_id, interval_seconds))
             self.refresh_tasks[wa_id] = task

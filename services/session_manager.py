@@ -1,5 +1,6 @@
 import aioredis
 from core.logger import get_logger
+import whatsapp_service
 import time
 import asyncio
 
@@ -11,7 +12,7 @@ class SessionManager:
         self.redis_url = redis_url
         self.session_ttl = session_ttl
         self.key_prefix = "last_timestamp"
-        self.refresh_tasks = {}
+        self.ttl_watcher_task = None
 
     async def connect(self):
         if not self.redis:
@@ -70,7 +71,11 @@ class SessionManager:
         await self.redis.delete(key)
         logger.info(f"[SessionManager] Deleted session for {wa_id}")
         
-    async def start_ttl_watcher(self, interval_seconds: int = 60):
+    async def on_session_expired(wa_id: str):
+        logger.info(f"[Callback] Session expired for {wa_id}, sending goodbye message")
+        await whatsapp_service.send_message(wa_id, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
+
+    async def start_ttl_watcher(self, on_expire_callback, interval_seconds: int = 60):
         if self.ttl_watcher_task and not self.ttl_watcher_task.done():
             logger.info("[TTLWatcher] Already running")
             return
@@ -88,5 +93,6 @@ class SessionManager:
                     if ttl == -2 or ttl == -1:
                         logger.info(f"[TTLWatcher] Session expired for {wa_id}")
                         await self.delete_session(wa_id)
+                        await on_expire_callback(wa_id)
 
         self.ttl_watcher_task = asyncio.create_task(watch_loop())

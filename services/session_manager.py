@@ -70,26 +70,23 @@ class SessionManager:
         await self.redis.delete(key)
         logger.info(f"[SessionManager] Deleted session for {wa_id}")
         
-    async def _start_auto_refresh(self, wa_id: str, interval_seconds: int = 300):
-        logger.info(f"[AutoRefresh] Starting auto-refresh for {wa_id}")
-        try:
-            while await self.has_session(wa_id):
+    async def start_ttl_watcher(self, interval_seconds: int = 60):
+        if self.ttl_watcher_task and not self.ttl_watcher_task.done():
+            logger.info("[TTLWatcher] Already running")
+            return
+
+        async def watch_loop():
+            logger.info("[TTLWatcher] Started")
+            while True:
                 await asyncio.sleep(interval_seconds)
-                await self.update_last_timestamp(wa_id)
-                logger.info(f"[AutoRefresh] Refreshed session for {wa_id}")
-        except asyncio.CancelledError:
-            logger.info(f"[AutoRefresh] Auto-refresh cancelled for {wa_id}")
+                keys = await self.get_all_sessions()
 
-    async def start_auto_refresh(self, wa_id: str, interval_seconds: int = 300):
-        if wa_id not in self.refresh_tasks:
-            task = asyncio.create_task(self._start_auto_refresh(wa_id, interval_seconds))
-            self.refresh_tasks[wa_id] = task
-            logger.info(f"[AutoRefresh] Scheduled auto-refresh for {wa_id}")
-        else:
-            logger.info(f"[AutoRefresh] Refresh task already running for {wa_id}")
+                for key in keys:
+                    wa_id = key.decode().split(":")[-1]
+                    ttl = await self.get_ttl(wa_id)
 
-    async def stop_auto_refresh(self, wa_id: str):
-        task = self.refresh_tasks.pop(wa_id, None)
-        if task:
-            task.cancel()
-            logger.info(f"[AutoRefresh] Stopped auto-refresh for {wa_id}")
+                    if ttl == -2 or ttl == -1:
+                        logger.info(f"[TTLWatcher] Session expired for {wa_id}")
+                        await self.delete_session(wa_id)
+
+        self.ttl_watcher_task = asyncio.create_task(watch_loop())

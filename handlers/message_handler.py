@@ -19,19 +19,19 @@ class MessageHandler:
         else:
             await self.whatsapp_service.send_main_menu(from_number, username)
         
-        ttl = await self.session_manager.update_last_timestamp(from_number)
+        ttl = await self.session_manager.get_ttl(from_number)
 
-        if ttl == 0:
+        if ttl == 0 or ttl == -2:
             # Session expired or not found
             logger.info(f"[MessageHandler] Session expired or not found for {from_number}. Sending goodbye and main menu.")
             await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
             await self.session_manager.delete_session(from_number)
-            await self.session_manager.stop_auto_refresh(from_number)
             return
 
         # Active session, update TTL
         await self.session_manager.update_last_timestamp(from_number)
-        await self.session_manager.start_auto_refresh(from_number)
+        await self.session_manager.start_ttl_watcher(interval_seconds=60)
+
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         ttl = await self.session_manager.get_ttl(from_number)

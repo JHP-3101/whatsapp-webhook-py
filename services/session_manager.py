@@ -53,6 +53,7 @@ class SessionManager:
         current_time = int(time.time())
         await self.redis.set(key, current_time, ex=self.session_ttl)
         logger.info(f"[SessionManager] Updated session for {wa_id} with timestamp={current_time}, TTL reset to {self.session_ttl} seconds")
+        return self.session_ttl
 
     async def get_all_sessions(self):
         await self.connect()

@@ -12,7 +12,13 @@ class MessageHandler:
         self.session_manager = session_manager
 
     async def handle_text_message(self, from_number: str, text: str, username: str):
-        ttl = await self.session_manager.get_ttl(from_number)
+        
+        if text.strip().lower() == "test":
+            await self.whatsapp_service.send_message(from_number, "hello world!")
+        else:
+            await self.whatsapp_service.send_main_menu(from_number, username)
+            ttl = await self.session_manager.get_ttl(from_number)
+            await self.session_manager.update_last_timestamp(from_number)
 
         if ttl == -2 or ttl == -1:
             # Session expired or not found
@@ -24,10 +30,6 @@ class MessageHandler:
         # Active session, update TTL
         await self.session_manager.update_last_timestamp(from_number)
 
-        if text.strip().lower() == "test":
-            await self.whatsapp_service.send_message(from_number, "hello world!")
-        else:
-            await self.whatsapp_service.send_main_menu(from_number, username)
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         ttl = await self.session_manager.get_ttl(from_number)

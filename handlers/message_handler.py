@@ -18,7 +18,7 @@ class MessageHandler:
             # Session expired or not found
             logger.info(f"[MessageHandler] Session expired or not found for {from_number}. Sending goodbye and main menu.")
             await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
-            await self.session_manager.update_last_timestamp(from_number)
+            await self.session_manager.delete_session(from_number)
             return
 
         # Active session, update TTL

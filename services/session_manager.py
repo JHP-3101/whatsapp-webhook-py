@@ -1,6 +1,7 @@
 import aioredis
 from core.logger import get_logger
 import time
+import asyncio
 
 logger = get_logger()
 
@@ -10,6 +11,7 @@ class SessionManager:
         self.redis_url = redis_url
         self.session_ttl = session_ttl
         self.key_prefix = "last_timestamp"
+        self.refresh_tasks = {}
 
     async def connect(self):
         if not self.redis:
@@ -67,3 +69,27 @@ class SessionManager:
         key = self._session_key(wa_id)
         await self.redis.delete(key)
         logger.info(f"[SessionManager] Deleted session for {wa_id}")
+        
+    async def _start_auto_refresh(self, wa_id: str, interval_seconds: int = 60):
+        logger.info(f"[AutoRefresh] Starting auto-refresh for {wa_id}")
+        try:
+            while await self.has_session(wa_id):
+                await asyncio.sleep(interval_seconds)
+                await self.update_last_timestamp(wa_id)
+                logger.info(f"[AutoRefresh] Refreshed session for {wa_id}")
+        except asyncio.CancelledError:
+            logger.info(f"[AutoRefresh] Auto-refresh cancelled for {wa_id}")
+
+    async def start_auto_refresh(self, wa_id: str, interval_seconds: int = 60):
+        if wa_id not in self.refresh_tasks:
+            task = asyncio.create_task(self._start_auto_refresh(wa_id, interval_seconds))
+            self.refresh_tasks[wa_id] = task
+            logger.info(f"[AutoRefresh] Scheduled auto-refresh for {wa_id}")
+        else:
+            logger.info(f"[AutoRefresh] Refresh task already running for {wa_id}")
+
+    async def stop_auto_refresh(self, wa_id: str):
+        task = self.refresh_tasks.pop(wa_id, None)
+        if task:
+            task.cancel()
+            logger.info(f"[AutoRefresh] Stopped auto-refresh for {wa_id}")

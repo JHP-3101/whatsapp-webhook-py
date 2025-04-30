@@ -3,6 +3,7 @@ from services.session_manager import SessionManager
 from globals import constants
 from core.logger import get_logger
 import time
+import asyncio
 
 logger = get_logger()
 
@@ -17,7 +18,8 @@ class MessageHandler:
             await self.whatsapp_service.send_message(from_number, "hello world!")
         else:
             await self.whatsapp_service.send_main_menu(from_number, username)
-            ttl = await self.session_manager.update_last_timestamp(from_number)
+        
+        ttl = await self.session_manager.update_last_timestamp(from_number)
 
         if ttl == -2 or ttl == -1:
             # Session expired or not found
@@ -28,6 +30,8 @@ class MessageHandler:
 
         # Active session, update TTL
         await self.session_manager.update_last_timestamp(from_number)
+        await self.session_manager.start_auto_refresh(from_number)
+
 
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):

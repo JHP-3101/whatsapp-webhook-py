@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from controllers.webhook_controller import router as webhook_router
+from controllers.lifespan import lifespan
 from dotenv import load_dotenv
 import os
 
@@ -13,6 +14,7 @@ PORT = int(os.getenv("PORT", 3006))
 app = FastAPI(
     title="WhatsApp Webhook Service",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.include_router(webhook_router)

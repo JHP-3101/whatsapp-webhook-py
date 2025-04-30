@@ -55,6 +55,7 @@ class SessionManager:
         current_time = int(time.time())
         await self.redis.set(key, current_time, ex=self.session_ttl)
         logger.info(f"[SessionManager] Updated session for {wa_id} with timestamp={current_time}, TTL reset to {self.session_ttl} seconds")
+        return self.session_ttl
 
     async def get_all_sessions(self):
         await self.connect()
@@ -79,11 +80,18 @@ class SessionManager:
             while True:
                 await asyncio.sleep(interval_seconds)
                 keys = await self.get_all_sessions()
+                
+                if not keys:
+                    logger.info("[TTLWatcher] No active sessions found")
+                    continue
 
                 for key in keys:
                     wa_id = key.decode().split(":")[-1]
+                    ttl = await self.get_ttl(wa_id)
+                    
+                    logger.info(f"[TTLWatcher] TTL for {wa_id} is {ttl} seconds")
 
-                    if not wa_id:
+                    if ttl == -2 or ttl == -1 :
                         logger.info(f"[TTLWatcher] Session expired for {wa_id}")
                         await self.delete_session(wa_id)
                         await on_expire_callback(wa_id)

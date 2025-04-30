@@ -28,8 +28,6 @@ class MessageHandler:
 
         # Active session, update TTL
         await self.session_manager.update_last_timestamp(from_number)
-        await self.session_manager.start_ttl_watcher(self.on_session_expired, interval_seconds=60)
-
 
     async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         ttl = await self.session_manager.get_ttl(from_number)

@@ -1,41 +1,92 @@
-from threading import Timer
-from datetime import datetime
+import aioredis
+from core.logger import get_logger
+import time
+import asyncio
 
-class Session:
-    def __init__(self, phone_number, on_timeout):
-        self.phone_number = phone_number
-        self.last_interaction = datetime.now()
-        self.timeout_task = None
-        self.on_timeout = on_timeout
-
-    def refresh(self):
-        self.last_interaction = datetime.now()
-        self.cancel_timeout()
-        self.schedule_timeout()
-
-    def schedule_timeout(self):
-        self.timeout_task = Timer(300, self.timeout)
-        self.timeout_task.start()
-
-    def cancel_timeout(self):
-        if self.timeout_task:
-            self.timeout_task.cancel()
-
-    def timeout(self):
-        self.on_timeout(self.phone_number)
+logger = get_logger()
 
 class SessionManager:
-    def __init__(self):
-        self.sessions = {}
+    def __init__(self, redis_url: str = "redis://localhost", session_ttl: int = 60):
+        self.redis = None
+        self.redis_url = redis_url
+        self.session_ttl = session_ttl
+        self.key_prefix = "last_timestamp"
+        self.ttl_watcher_task = None
 
-    def start_or_refresh_session(self, phone_number, on_timeout):
-        if phone_number not in self.sessions:
-            self.sessions[phone_number] = Session(phone_number, on_timeout)
-        self.sessions[phone_number].refresh()
+    async def connect(self):
+        if not self.redis:
+            self.redis = await aioredis.from_url(self.redis_url)
+            logger.info("[SessionManager] Connected to Redis")
 
-    def end_session(self, phone_number):
-        session = self.sessions.pop(phone_number, None)
-        if session:
-            session.cancel_timeout()
+    def _session_key(self, wa_id: str) -> str:
+        return f"{self.key_prefix}:{wa_id}"
 
-session_manager = SessionManager()
+    async def get_ttl(self, wa_id: str) -> int:
+        await self.connect()
+        key = self._session_key(wa_id)
+        ttl = await self.redis.ttl(key)
+        logger.info(f"[SessionManager] TTL for {wa_id} is {ttl} seconds")
+        return ttl
+
+    async def has_session(self, wa_id: str) -> bool:
+        await self.connect()
+        key = self._session_key(wa_id)
+        exists = await self.redis.exists(key)
+        logger.info(f"[SessionManager] Session exists for {wa_id}: {bool(exists)}")
+        return exists == 1
+
+    async def get_last_timestamp(self, wa_id: str):
+        await self.connect()
+        key = self._session_key(wa_id)
+        value = await self.redis.get(key)
+        ttl = await self.redis.ttl(key)
+
+        if value:
+            timestamp = int(value)
+            logger.info(f"[SessionManager] Found session for {wa_id}: timestamp={timestamp}, TTL={ttl}")
+            return timestamp
+        else:
+            logger.info(f"[SessionManager] No session for {wa_id}, TTL={ttl}")
+            return None
+
+    async def update_last_timestamp(self, wa_id: str):
+        await self.connect()
+        key = self._session_key(wa_id)
+        current_time = int(time.time())
+        await self.redis.set(key, current_time, ex=self.session_ttl)
+        logger.info(f"[SessionManager] Updated session for {wa_id} with timestamp={current_time}, TTL reset to {self.session_ttl} seconds")
+        return self.session_ttl
+
+    async def get_all_sessions(self):
+        await self.connect()
+        pattern = f"{self.key_prefix}:*"
+        keys = await self.redis.keys(pattern)
+        logger.info(f"[SessionManager] Retrieved {len(keys)} session keys")
+        return keys
+
+    async def delete_session(self, wa_id: str):
+        await self.connect()
+        key = self._session_key(wa_id)
+        await self.redis.delete(key)
+        logger.info(f"[SessionManager] Deleted session for {wa_id}")
+
+    async def start_ttl_watcher(self, on_expire_callback, interval_seconds: int = 60):
+        if self.ttl_watcher_task and not self.ttl_watcher_task.done():
+            logger.info("[TTLWatcher] Already running")
+            return
+
+        async def watch_loop():
+            logger.info("[TTLWatcher] Started")
+            while True:
+                await asyncio.sleep(interval_seconds)
+                keys = await self.get_all_sessions()
+
+                for key in keys:
+                    wa_id = key.decode().split(":")[-1]
+
+                    if not keys:
+                        logger.info(f"[TTLWatcher] Session expired for {wa_id}")
+                        await self.delete_session(wa_id)
+                        await on_expire_callback(wa_id)
+
+        self.ttl_watcher_task = asyncio.create_task(watch_loop())

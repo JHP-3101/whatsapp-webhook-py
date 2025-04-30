@@ -1,75 +1,45 @@
-import logging
-from services.whatsapp_service import WhatsappService
+from services.whatsapp_service import WhatsAppService
+from services.session_manager import SessionManager
 from globals import constants
+from core.logger import get_logger
+import time
+import asyncio
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsappService):
+    def __init__(self, whatsapp_service: WhatsAppService, session_manager: SessionManager):
         self.whatsapp_service = whatsapp_service
-
-    async def handle_text_message(self, message: dict, from_no: str, username: str):
-        msg_body = message.get("text", {}).get("body", "").strip().lower()
+        self.session_manager = session_manager
         
-        # Do nothing if messages empty
-        if not msg_body:
-            logger.info(f"Empty message received from {from_no}, ignoring.")
-            return
+    async def handle_text_message(self, from_number: str, text: str, username: str):
         
-        if msg_body == "test31":
-            logger.info(f"Handling 'test' message from {from_no}")
-            await self.whatsapp_service.send_message(from_no, "This is developer testing code.")
+        if text.strip().lower() == "test":
+            await self.whatsapp_service.send_message(from_number, "hello world!")
         else:
-            logger.info(f"Received text message '{msg_body}' - sending main menu to {from_no}")
-            await self.whatsapp_service.send_menu(from_no, username)
+            await self.whatsapp_service.send_main_menu(from_number, username)
 
-    async def handle_interactive_message(self, interactive: dict, from_no: str, username: str):
-        interactive_type = interactive.get("type")
-        
-        if interactive_type == constants.LIST_REPLY:
-            list_reply_id = interactive.get(constants.LIST_REPLY, {}).get("id")
-            
-            if list_reply_id == constants.MEMBER:
-                response_text = "Anda memilih menu Member."
-                logger.info(f"Handling list reply for Member: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_member_menu(from_no)
-            
-            # Future: Trigger member-related logic here 
-            elif list_reply_id == constants.ON_DEV_1:
-                response_text = "Menu ini sedang dalam pengembangan."
-                logger.info(f"Handling list reply for On Development: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_message(from_no, response_text)
-                # Future: Indicate that this is under development
-                
-            elif list_reply_id == constants.MEMBER_MENU_INFO:
-                response_text = "Anda memilih menu Informasi Member."
-                logger.info(f"Handling list reply for Informasi Member: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_message(from_no, response_text)
-                # Logical Funtion To Show Member Info
-                
-            elif list_reply_id == constants.MEMBER_MENU_REGISTER:
-                response_text = "Anda memilih menu Daftar Member."
-                logger.info(f"Handling list reply for Daftar Member: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_message(from_no, response_text)
-                # Logical Funtion to Register Member
-                
-            elif list_reply_id == constants.MEMBER_MENU_CHECK_POINTS:
-                response_text = "Anda memilih menu Cek Poin Member."
-                logger.info(f"Handling list reply for Cek Poin Member: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_message(from_no, response_text)
-                # Logical Funtion To Check Member Points
-            
-            elif list_reply_id == constants.BACK_TO_MAIN_MENU:
-                logger.info(f"User selected 'Kembali ke Menu Utama'. Sending main menu.")
-                await self.whatsapp_service.send_menu(from_no, username)
-            
-            else:
-                response_text = f"Anda memilih: {list_reply_id}"
-                logger.warning(f"Unhandled list reply ID: {list_reply_id} from {from_no}")
-                await self.whatsapp_service.send_message(from_no, response_text)
-        # Add handling for other interactive types (e.g., buttons) if needed
-        
-    async def send_goodbye_message(self, from_no: str):
-        goodbye_text = "Terimakasih telah menghubungi layanan member Alfamidi. Sampai jumpa lain waktu."
-        logger.info(f"Sending goodbye message to {from_no} due to session timeout.")
-        await self.whatsapp_service.send_message(from_no, goodbye_text)
+        # Active session, update TTL
+        await self.session_manager.update_last_timestamp(from_number)
+
+    async def handle_interactive_message(self, from_number: str, interactive_data: dict):
+        ttl = await self.session_manager.get_ttl(from_number)
+
+        if ttl == -2 or ttl == -1:
+            logger.info(f"[MessageHandler] Session expired or not found for {from_number}. Sending goodbye.")
+            await self.whatsapp_service.send_message(from_number, "Terimakasih telah menghubungi layanan Alfamidi. Sampai jumpa lain waktu!")
+            await self.session_manager.delete_session(from_number)
+            await self.session_manager.stop_auto_refresh(from_number)
+            return
+
+        # Active session, update TTL
+        await self.session_manager.update_last_timestamp(from_number)
+
+        reply_id = interactive_data.get("list_reply", {}).get("id")
+
+        if reply_id == constants.MENU_1:
+            await self.whatsapp_service.send_message(from_number, "anda memilih menu 1")
+        elif reply_id == constants.MENU_2:
+            await self.whatsapp_service.send_message(from_number, "anda memilih menu 2")
+        else:
+            await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")

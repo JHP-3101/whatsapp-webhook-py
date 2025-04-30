@@ -1,22 +1,22 @@
 import os
-import logging
 import httpx
-from globals import constants
+from core.logger import get_logger
 from fastapi import HTTPException
-from dotenv import load_dotenv  
+from dotenv import load_dotenv
+from globals import constants
 
-# Load environment variables from .env
+logger = get_logger()
+
 load_dotenv()
 
-# Konfigurasi logging
-logger = logging.getLogger(__name__)
 
-class WhatsappService:
+class WhatsAppService:
+
     def __init__(self):
         self.token = os.getenv("TOKEN_META")
         self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
         self.base_url = "https://graph.facebook.com/v20.0"
-    
+        
     async def _post(self, endpoint: str, payload: dict) :
         url = f"{self.base_url}/{self.phone_number_id}/{endpoint}?access_token={self.token}"
         headers = {"Content-Type": "application/json"}
@@ -34,7 +34,7 @@ class WhatsappService:
             except Exception as e:
                 logger.error(f"An unexpected error occurred during WhatsApp API call: {e} - Endpoint: {endpoint}, Payload: {payload}")
                 raise HTTPException(status_code=500, detail="Internal server error during WhatsApp API call")
-        
+
     async def send_message(self, to: str, message: str):
         payload = {
             "messaging_product": "whatsapp",
@@ -43,8 +43,8 @@ class WhatsappService:
             "text": {"body": message},
         }
         await self._post("messages", payload)
-        
-    async def send_menu(self, to: str, username: str = "Pelanggan"):
+
+    async def send_main_menu(self, to: str, username: str = "Pelanggan"):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
@@ -56,52 +56,12 @@ class WhatsappService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": constants.MEMBER, "title": "Member"},
-                            {"id": constants.ON_DEV_1, "title": "Menu On Development"}
+                            {"id": constants.MENU_1, "title": "MENU ON DEV 1"},
+                            {"id": constants.MENU_2, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"
                 }
             }
         }
-        await self._post("messages", payload)
-        
-    async def send_member_menu(self, to: str):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "interactive",
-            "interactive": {
-                "type": "list",
-                "body": {"text": f"Berikut adalah layanan Member yang tersedia:"},
-                "action": {
-                    "sections": [{
-                        "title": "Menu Member",
-                        "rows": [
-                            {"id": constants.MEMBER_MENU_INFO, "title": "Informasi Member"},
-                            {"id": constants.MEMBER_MENU_REGISTER, "title": "Daftar Member"},
-                            {"id": constants.MEMBER_MENU_CHECK_POINTS, "title": "Cek Poin Member"},
-                            {"id": constants.BACK_TO_MAIN_MENU, "title": "Main Menu"}
-                        ]
-                    }],
-                    "button": "Pilih Layanan Member"
-                }
-            }
-        }
-        
-        await self._post("messages", payload)
-
-    # Example of sending a template message (Illustrative)
-    async def send_template_message(self, to: str, template_name: str, language_code: str, components: list = None):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "template",
-            "template": {
-                "name": template_name,
-                "language": {"code": language_code}
-            }
-        }
-        if components:
-            payload["template"]["components"] = components
         await self._post("messages", payload)

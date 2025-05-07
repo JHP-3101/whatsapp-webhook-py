@@ -24,8 +24,8 @@ class PLMSService:
             response = requests.post(f"{self.endpoint}/login", json=payload)
             response.raise_for_status()
             data = response.json()
-            self.data = data.get("data", {})
-            logger.info("PLMS login successful, token acquired.")
+            self.data = data
+            logger.info("PLMS login successful, token acquired.", data)
         except Exception as e:
             logger.error(f"PLMS login failed: {e}")
             raise

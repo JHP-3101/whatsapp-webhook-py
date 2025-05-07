@@ -3,12 +3,11 @@ import httpx
 from core.logger import get_logger
 from fastapi import HTTPException
 from dotenv import load_dotenv
-from globals import constants
+from globals.constants import Menu
 
 logger = get_logger()
 
 load_dotenv()
-
 
 class WhatsAppService:
 
@@ -56,8 +55,8 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": constants.MENU_1, "title": "MENU ON DEV 1"},
-                            {"id": constants.MENU_2, "title": "MENU ON DEV 2"}
+                            {"id": Menu.MENU_1, "title": "MENU ON DEV 1"},
+                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"

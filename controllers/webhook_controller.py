@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Response
 from services.whatsapp_service import WhatsAppService
+from services.plms_service import PLMSService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
 from core.logger import get_logger
@@ -16,6 +17,15 @@ PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)
 contact_handler = ContactHandler(whatsapp_service)
+
+@router.get("/login")
+async def plms_login():
+    try:
+        plms_service = PLMSService()
+        plms_service.login()
+        return{"message": "Login successful", "token": plms_service.token}
+    except Exception as e:
+        return Response(content=f"Login failed: {str(e)}", status_code=500)
 
 @router.get("/webhook")
 async def verify_webhook(request: Request):

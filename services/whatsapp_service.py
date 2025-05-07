@@ -94,7 +94,7 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": "Silakan pilih layanan member yang tersedia:"},
+                "body": {"text": "Nomor Anda telah terdaftar ke dalam member Alfamidi.\nSilakan pilih layanan member yang tersedia:"},
                 "action": {
                     "sections": [{
                         "title": "Layanan Member",

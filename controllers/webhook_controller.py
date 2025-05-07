@@ -23,7 +23,7 @@ async def plms_login():
     try:
         plms_service = PLMSService()
         plms_service.login()
-        return{"message": "Login successful", "data": plms_service.data}
+        return{"message": "Login successful", "token": plms_service.token}
     except Exception as e:
         return Response(content=f"Login failed: {str(e)}", status_code=500)
 

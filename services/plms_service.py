@@ -9,6 +9,7 @@ class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
         self.data = None
+        self.token = None
 
     def generate_checksum(self):
         text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
@@ -25,7 +26,8 @@ class PLMSService:
             response.raise_for_status()
             data = response.json()
             self.data = data
-            logger.info("PLMS login successful, token acquired.", data)
+            self.token = data["token"]
+            logger.info("PLMS login successful, token acquired.")
         except Exception as e:
             logger.error(f"PLMS login failed: {e}")
             raise

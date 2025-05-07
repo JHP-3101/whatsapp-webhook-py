@@ -21,9 +21,9 @@ contact_handler = ContactHandler(whatsapp_service)
 @router.get("/login")
 async def plms_login():
     try:
-        plms_service = PLMSService()
-        plms_service.login()
-        return{"message": "Login successful", "data": plms_service.data}
+        service = PLMSService()
+        service.login()
+        return {"message": "Login successful", "token": service.token}
     except Exception as e:
         return Response(content=f"Login failed: {str(e)}", status_code=500)
 

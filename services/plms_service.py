@@ -23,9 +23,15 @@ class PLMSService:
         try:
             response = requests.post(f"{self.endpoint}/login", json=payload)
             response.raise_for_status()
+
             data = response.json()
-            self.data = data
-            logger.info("PLMS login successful, token acquired.", data)
+            if data.get("data", {}).get("response_code") == "00":
+                self.token = data["data"]["token"]
+                logger.info("PLMS login successful.")
+            else:
+                logger.error(f"Login failed with message: {data.get('data', {}).get('message')}")
+                raise ValueError("Login response_code not 00")
+
         except Exception as e:
             logger.error(f"PLMS login failed: {e}")
             raise

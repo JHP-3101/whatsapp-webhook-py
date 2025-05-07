@@ -18,10 +18,10 @@ class MessageHandler:
         else:
             await self.whatsapp_service.send_main_menu(from_number, username)
 
-    async def handle_interactive_message(self, from_number: str, interactive_data: dict):
+    async def handle_interactive_message(self, from_number: str, interactive_data: dict, contact:dict):
         reply_id = interactive_data.get("list_reply", {}).get("id")
         if reply_id == Menu.MEMBER:
-            await self.whatsapp_service.send_member_menu(from_number)
+            self.validate_member(from_number, contact)
         elif reply_id == Menu.MENU_2:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu 2")
         elif reply_id == Menu.MEMBER_VALIDASI:

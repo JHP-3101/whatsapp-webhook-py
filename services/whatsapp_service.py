@@ -65,28 +65,6 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
         
-    async def send_member_menu(self, to: str):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "interactive",
-            "interactive": {
-                "type": "list",
-                "body": {"text": "Silakan pilih layanan member yang anda butuhkan"},
-                "action": {
-                    "sections": [{
-                        "title": "Pilih Menu",
-                        "rows": [
-                            {"id": Menu.MEMBER_REGISTRASI, "title": "Validasi"},
-                            {"id": Menu.MAIN_MENU, "title": "Menu Utama"}
-                        ]
-                    }],
-                    "button": "Pilih Menu"
-                }
-            }
-        }
-        await self._post("messages", payload)
-        
     async def send_member_services_menu(self, to: str):
         payload = {
             "messaging_product": "whatsapp",

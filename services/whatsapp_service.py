@@ -55,11 +55,80 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MENU_1, "title": "MENU ON DEV 1"},
+                            {"id": Menu.MEMBER, "title": "Member"},
                             {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"
+                }
+            }
+        }
+        await self._post("messages", payload)
+        
+    async def send_member_menu(self, to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": "Silakan pilih layanan member yang anda butuhkan"},
+                "action": {
+                    "sections": [{
+                        "title": "Pilih Menu",
+                        "rows": [
+                            {"id": Menu.MEMBER_REGISTRASI, "title": "Validasi"},
+                            {"id": Menu.MAIN_MENU, "title": "Menu Utama"}
+                        ]
+                    }],
+                    "button": "Pilih Menu"
+                }
+            }
+        }
+        await self._post("messages", payload)
+        
+    async def send_member_services_menu(self, to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": "Silakan pilih layanan member yang tersedia:"},
+                "action": {
+                    "sections": [{
+                        "title": "Layanan Member",
+                        "rows": [
+                            {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
+                            {"id": Menu.MEMBER_STATUS_KARTU, "title": "Status Kartu"},
+                            {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
+                            {"id": Menu.MEMBER_RESET_PIN, "title": "Reset PIN"},
+                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
+                        ]
+                    }],
+                    "button": "Pilih Layanan"
+                }
+            }
+        }
+        await self._post("messages", payload)
+    
+    async def send_registration_menu(self, to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": "Nomor Anda belum terdaftar sebagai member. Silakan daftar di bawah ini:"},
+                "action": {
+                    "sections": [{
+                        "title": "Registrasi Member",
+                        "rows": [
+                            {"id": Menu.MEMBER_REGISTRASI, "title": "Registrasi"},
+                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
+                        ]
+                    }],
+                    "button": "Lanjutkan"
                 }
             }
         }

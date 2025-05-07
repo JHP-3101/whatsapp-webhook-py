@@ -1,8 +1,16 @@
 from enum import Enum
 
 class Menu (str, Enum):
-    MENU_1 = "menu-1"
+    MEMBER = "menu-member"
     MENU_2 = "menu-2"
+    MAIN_MENU = "main-menu"
+    
+    MEMBER_VALIDASI = "validasi-member"
+    MEMBER_REGISTRASI = "registrasi-member"
+    MEMBER_CEK_POIN = "cek-poin-member"
+    MEMBER_STATUS_KARTU = "status-kartu-member"
+    MEMBER_RIWAYAT_TRANSAKSI_POIN = "riwayat-transaksi-poin-member"
+    MEMBER_RESET_PIN = "reset-pin-member"
     
 class ChecksumPin (str, Enum):
     PIN = "SaltNyaSaltNyaSaltNyaSaltNyaSalt"

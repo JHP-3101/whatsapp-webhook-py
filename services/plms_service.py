@@ -1,5 +1,6 @@
 import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
+from handlers.contact_handler import ContactHandler
 from core.logger import get_logger
 import hashlib
 
@@ -8,26 +9,61 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
-        self.data = None
         self.token = None
-
-    def generate_checksum(self):
-        text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
-        return hashlib.sha256(text.encode()).hexdigest()
-
+        self.mode = "mobile"
+        
     def login(self):
+        text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
+        checksum = hashlib.sha256(text.encode()).hexdigest()
+    
         payload = {
             "username": PLMSUser.USERNAME.value,
             "password": PLMSUser.PASSWORD.value,
-            "checksum": self.generate_checksum()
+            "checksum": checksum
         }
+        
         try:
             response = requests.post(f"{self.endpoint}/login", json=payload)
             response.raise_for_status()
             data = response.json()
-            self.data = data
-            self.token = data["token"]
+            self.token = data.get("token")
+            
+            if not self.token:
+                raise ValueError("Token not found in login response")
+            
             logger.info("PLMS login successful, token acquired.")
+            return self.token
+        
         except Exception as e:
             logger.error(f"PLMS login failed: {e}")
             raise
+        
+    def validate_member(self, phone_number: str):
+        if not self.token:
+            self.login()
+            
+        logger.info(f"Validating member with phone number: {phone_number}")
+            
+        text = self.mode + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        checksum = hashlib.sha256(text.encode()).hexdigest()
+        
+        payload = {
+            "mode": self.mode,
+            "id": phone_number,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        try:
+            response = requests.post(f"{self.endpoint}/validatemember", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Validate member response: {data}")
+            return data
+        except Exception as e:
+            logger.error(f"Validate member failed: {e}")
+            raise
+            
+        
+        
+        

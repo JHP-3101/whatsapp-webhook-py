@@ -73,7 +73,8 @@ async def webhook_handler(request: Request):
         if contacts:
             for contact in contacts:
                 username = await contact_handler.get_profile_name(contact)
-                logger.info(f"Incoming message from profile: {username}")
+                phone_number = await contact_handler.get_phone_number(contact)
+                logger.info(f"Incoming message from profile: {username} | {phone_number}")
 
         # Handle messages
         if messages:

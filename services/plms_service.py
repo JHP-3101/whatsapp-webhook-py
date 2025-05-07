@@ -50,7 +50,7 @@ class PLMSService:
             
         text = self.mode + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = hashlib.sha256(text.encode()).hexdigest()
-        logger.info(f"VALIDATE MEMBER : checksum")
+        logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
             "mode": self.mode,

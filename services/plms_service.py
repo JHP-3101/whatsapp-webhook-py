@@ -50,16 +50,18 @@ class PLMSService:
             
         logger.info(f"Validating member with phone number: {phone_number}")
             
-        text = self.mode + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
-            "mode": self.mode,
+            "mode": "mobile",
             "id": phone_number,
             "token": self.token,
             "checksum": checksum
         }
+        
+        logger.info(payload)
         
         try:
             response = requests.post(f"{self.endpoint}/validatemember", json=payload)

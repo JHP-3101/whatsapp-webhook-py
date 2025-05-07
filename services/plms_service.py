@@ -24,7 +24,7 @@ class PLMSService:
             response = requests.post(f"{self.endpoint}/login", json=payload)
             response.raise_for_status()
             data = response.json()
-            self.token = data.get("data", {}).get("token")  # Adjust key path based on actual API response
+            self.data = data.get("data", {})
             logger.info("PLMS login successful, token acquired.")
         except Exception as e:
             logger.error(f"PLMS login failed: {e}")

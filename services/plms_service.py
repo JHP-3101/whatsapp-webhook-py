@@ -11,6 +11,7 @@ class PLMSService:
         self.endpoint = PLMSEndpoint.ENDPOINT.value
         self.token = None
         self.mode = "mobile"
+        self.with_balance = 1
         
     def login(self):
         text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
@@ -47,9 +48,7 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        logger.info(f"Validating member with phone number: {phone_number}")
-            
-        text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = self.mode + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
@@ -73,6 +72,43 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Validate member failed: {e}")
             raise
+        
+    def inquiry(self, phone_number: str):
+        if not self.token:
+            self.login()
+        
+        phone_number = str(phone_number)
+        
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        text = self.mode + phone_number + self.with_balance + self.token + PLMSSecretKey.SECRET_KEY.value
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        
+        payload = {
+            "mode" : self.mode,
+            "id" : phone_number,
+            "with_balance" : self.with_balance,
+            "token" : self.token,
+            "checsum" : checksum  
+        }
+        
+        try:
+            response = requests.post(f"{self.endpoint}/inquiry", json=payload)
+            data = response.json()
+            logger.info(f"INQUIRY MEMBER| Response: {data}")
+            card_number = data.get("card_number")
+            email = data.get("email")
+            total_points = data.get("redeemable_pool_units") # "redeemable_pool_units": 1663926
+            expired_point = data.get("eeb_pool_units") # "eeb_pool_units": 993601
+            expired_point_date = data.get("eeb_date") # "eeb_date": "20250531"
+            
+        except Exception as e:
+            logger.error(f"Failed inquiry with status: {e}")
+            raise
+            
+            
+        
             
         
         

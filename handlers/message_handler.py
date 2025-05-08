@@ -46,9 +46,12 @@ class MessageHandler:
             if code == "00":
                 # Valid member: show member services menu
                 await self.whatsapp_service.send_member_services_menu(from_number)
-            else:
+            elif code == "E073":
                 # Not a member: show registration option
                 await self.whatsapp_service.send_registration_menu(from_number)
+            else:
+                await self.whatsapp_service.send_message(from_number, "Terjadi gangguan. Mohon tunggu")
+                
         except Exception as e:
             logger.error(f"Error during auto member validation: {e}", exc_info=True)
             await self.whatsapp_service.send_message(from_number, "ERROR | Cannot Validate Member")

@@ -15,6 +15,7 @@ class PLMSService:
     def login(self):
         text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
         checksum = hashlib.sha256(text.encode()).hexdigest()
+        logger.info(f"CHECKSUM FOR LOGIN {checksum}")
     
         payload = {
             "username": PLMSUser.USERNAME.value,

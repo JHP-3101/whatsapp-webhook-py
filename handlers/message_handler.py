@@ -28,7 +28,7 @@ class MessageHandler:
         elif reply_id == Menu.MEMBER_VALIDASI:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu VALIDASI")
         elif reply_id == Menu.MAIN_MENU:
-            username : str = "Pelanggan"
+            username = contact.get("profile", {}).get("name")
             await self.whatsapp_service.send_main_menu(from_number, username)
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")

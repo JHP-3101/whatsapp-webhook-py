@@ -56,7 +56,7 @@ class PLMSService:
         logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
-            "mode": "mobile",
+            "mode": self.mode,
             "id": phone_number,
             "token": self.token,
             "checksum": checksum
@@ -70,14 +70,9 @@ class PLMSService:
             response.raise_for_status()
             data = response.json()
             logger.info(f"Validate member response: {data}")
-            response_code = data.get("response_code")
-
-            if response_code == "00":
-                return data
-            elif response_code == "E073":
-                return data
-            else :
-                logger.error(f"{response_code} | token expired")     
+            response_code = data["response_code"]
+            
+            return response_code 
                 
         except Exception as e:
             logger.error(f"Validate member failed: {e}")

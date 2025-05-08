@@ -18,7 +18,7 @@ class MessageHandler:
         else:
             await self.whatsapp_service.send_main_menu(from_number, username)
 
-    async def handle_interactive_message(self, from_number: str, interactive_data: dict):
+    async def handle_interactive_message(self, from_number: str, interactive_data: dict, username: str):
         reply_id = interactive_data.get("list_reply", {}).get("id")
         if reply_id == Menu.MEMBER:
             contact = {"wa_id": from_number}
@@ -28,7 +28,7 @@ class MessageHandler:
         elif reply_id == Menu.MEMBER_VALIDASI:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu VALIDASI")
         elif reply_id == Menu.MAIN_MENU:
-            await self.whatsapp_service.send_main_menu(from_number, "")
+            await self.whatsapp_service.send_main_menu(from_number, username)
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")
             
@@ -45,7 +45,7 @@ class MessageHandler:
                 
             if code == "00":
                 # Valid member: show member services menu
-                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member *Alfamidi*.\n\nNomor member Anda: *_{card_number}_*.")
+                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor member Anda: *{card_number}*.")
                 await self.whatsapp_service.send_member_services_menu(from_number)
             elif code == "E073":
                 # Not a member: show registration option

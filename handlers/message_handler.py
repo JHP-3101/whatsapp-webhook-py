@@ -45,7 +45,7 @@ class MessageHandler:
                 
             if code == "00":
                 # Valid member: show member services menu
-                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi dengan nomor member: {card_number}.")
+                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor member: *{card_number}*.")
                 await self.whatsapp_service.send_member_services_menu(from_number)
             elif code == "E073":
                 # Not a member: show registration option

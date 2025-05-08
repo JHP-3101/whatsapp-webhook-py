@@ -42,7 +42,6 @@ class PLMSService:
     def validate_member(self, phone_number: str):
         if not self.token:
             self.login()
-            logger.info(f"VALIDATE MEMBER | Token: {self.token}")
         
         phone_number = str(phone_number)
         
@@ -53,7 +52,6 @@ class PLMSService:
             
         text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
-        logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
             "mode": self.mode,
@@ -68,7 +66,7 @@ class PLMSService:
         try:
             response = requests.post(f"{self.endpoint}/validatemember", json=payload)
             data = response.json()
-            logger.info(f"Validate member response: {data}")
+            logger.info(f"VALIDATE MEMBER | Response: {data}")
             response_code = data.get("response_code")
             
             if response_code == "E004":

@@ -67,7 +67,7 @@ class PLMSService:
 
         try:
             response = requests.post(f"{self.endpoint}/validatemember", json=payload)
-            response.raise_for_status()
+            # response.raise_for_status()
             data = response.json()
             logger.info(f"Validate member response: {data}")
             response_code = data["response_code"]

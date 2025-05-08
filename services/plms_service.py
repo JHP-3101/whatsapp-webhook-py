@@ -46,8 +46,8 @@ class PLMSService:
         
         phone_number = str(phone_number)
         
-        # if phone_number.startswith("62"):
-        #     phone_number = "0" + phone_number[2:]
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
             
         logger.info(f"Validating member with phone number: {phone_number}")
             

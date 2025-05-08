@@ -46,18 +46,18 @@ class PLMSService:
         
         phone_number = str(phone_number)
         
-        if phone_number.startswith("62"):
-            phone_number = "0" + phone_number[2:]
+        # if phone_number.startswith("62"):
+        #     phone_number = "0" + phone_number[2:]
             
         logger.info(f"Validating member with phone number: {phone_number}")
             
-        text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = "mobile" + "085394202728" + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
             "mode": "mobile",
-            "id": phone_number,
+            "id": "085394202728",
             "token": self.token,
             "checksum": checksum
         }

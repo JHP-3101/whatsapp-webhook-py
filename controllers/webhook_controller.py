@@ -84,7 +84,7 @@ async def webhook_handler(request: Request):
             if message["type"] == "text":
                 await message_handler.handle_text_message(from_number, message["text"]["body"], username)
             elif message["type"] == "interactive":
-                await message_handler.handle_interactive_message(from_number, message["interactive"])
+                await message_handler.handle_interactive_message(from_number, message["interactive"], username)
 
         return Response(content="Event received", status_code=200)
 

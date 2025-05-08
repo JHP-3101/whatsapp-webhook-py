@@ -15,7 +15,6 @@ class PLMSService:
     def login(self):
         text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
         checksum = hashlib.sha256(text.encode()).hexdigest()
-        logger.info(f"CHECKSUM FOR LOGIN {checksum}")
     
         payload = {
             "username": PLMSUser.USERNAME.value,
@@ -60,9 +59,6 @@ class PLMSService:
             "checksum": checksum
         }
         
-        logger.info(payload)
-        
-
         try:
             response = requests.post(f"{self.endpoint}/validatemember", json=payload)
             data = response.json()

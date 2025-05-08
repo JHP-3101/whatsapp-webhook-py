@@ -72,7 +72,7 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": "Nomor Anda telah terdaftar ke dalam member Alfamidi.\nSilakan pilih layanan member yang tersedia:"},
+                "body": {"text": "Silakan pilih layanan member yang tersedia:"},
                 "action": {
                     "sections": [{
                         "title": "Layanan Member",
@@ -97,7 +97,7 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": "Nomor Anda belum terdaftar sebagai member. Silakan daftar di bawah ini:"},
+                "body": {"text": "Nomor Anda belum terdaftar sebagai member.\n\nSilakan daftar di bawah ini:"},
                 "action": {
                     "sections": [{
                         "title": "Registrasi Member",

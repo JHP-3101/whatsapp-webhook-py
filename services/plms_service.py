@@ -51,13 +51,13 @@ class PLMSService:
             
         logger.info(f"Validating member with phone number: {phone_number}")
             
-        text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = "mobile" + "085394202728" + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
             "mode": self.mode,
-            "id": phone_number,
+            "id": "085394202728",
             "token": self.token,
             "checksum": checksum
         }
@@ -67,13 +67,15 @@ class PLMSService:
 
         try:
             response = requests.post(f"{self.endpoint}/validatemember", json=payload)
-            # response.raise_for_status()
             data = response.json()
             logger.info(f"Validate member response: {data}")
-            response_code = data["response_code"]
+            response_code = data.get("response_code")
             
-            return response_code 
+            if response_code == "E004":
+                logger.error("ERROR | token already expired")
                 
+            return data
+        
         except Exception as e:
             logger.error(f"Validate member failed: {e}")
             raise

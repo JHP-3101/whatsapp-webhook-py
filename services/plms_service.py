@@ -51,13 +51,13 @@ class PLMSService:
             
         logger.info(f"Validating member with phone number: {phone_number}")
             
-        text = "mobile" + "085394202728" + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = "mobile" + phone_number + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"VALIDATE MEMBER : {checksum}")
         
         payload = {
             "mode": self.mode,
-            "id": "085394202728",
+            "id": phone_number,
             "token": self.token,
             "checksum": checksum
         }

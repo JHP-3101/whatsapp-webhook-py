@@ -1,5 +1,3 @@
-# services/crypto_service.py
-
 import json
 from base64 import b64decode, b64encode
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
@@ -7,9 +5,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 from cryptography.hazmat.backends import default_backend
 
-
 class FlowCryptoService:
-    def __init__(self, private_key_pem: str, passphrase: str | None = None):
+    def __init__(self, private_key_pem: str, passphrase: str):
         self.private_key = serialization.load_pem_private_key(
             private_key_pem.encode("utf-8"),
             password=passphrase.encode("utf-8") if passphrase else None,

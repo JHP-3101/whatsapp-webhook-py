@@ -120,7 +120,8 @@ async def waflow_handler(request: Request):
         if not version or not action:
             return Response(content="Missing required fields", status_code=400)
 
-        screen_data = await flow_handler.handle_flow(screen, version, data, flow_token)
+        # 👇 Pass `action` as an extra argument
+        screen_data = await flow_handler.handle_flow(screen, version, data, flow_token, action)
 
         if screen_data and all(k in screen_data for k in ["version", "screen", "action", "data"]):
             encrypted_response = FlowCryptoService.encrypt_response(screen_data, aes_key_buffer, initial_vector_buffer)

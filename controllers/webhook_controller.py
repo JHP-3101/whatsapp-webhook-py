@@ -103,9 +103,6 @@ async def webhook_handler(request: Request):
 async def waflow_handler(request: Request):
     try:
         encrypted_body = await request.body()
-        logger.info(f"PRIVATE KEY : {PRIVATE_KEY}")
-        logger.info(f"PASSPHRASE : {PASSPHRASE_ENV}")
-
         decrypted_body, aes_key, iv = crypto_service.decrypt_request(encrypted_body)
 
         screen = decrypted_body.get("screen")

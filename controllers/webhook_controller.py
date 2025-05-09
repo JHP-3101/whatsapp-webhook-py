@@ -6,17 +6,19 @@ from handlers.contact_handler import ContactHandler
 from handlers.flow_handler import FlowHandler
 from services.flowcrypto_service import FlowCryptoService
 from core.logger import get_logger
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 import os
 
 router = APIRouter()
 logger = get_logger()
-env = dotenv_values(".env")
+load_dotenv()
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
-PRIVATE_KEY = env.get("PRIVATE_KEY")
-PASSPHRASE_ENV = env.get("PASSPHRASE_ENV")
+PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
+PASSPHRASE = os.environ.get("PRIVATE_KEY_PASSPHRASE")  # if needed
+
+crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE)
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)
@@ -101,15 +103,10 @@ async def webhook_handler(request: Request):
 async def waflow_handler(request: Request):
     try:
         encrypted_body = await request.body()
+        logger.info(f"PRIVATE KEY : {PRIVATE_KEY}")
+        logger.info(f"PASSPHRASE : {PASSPHRASE}")
 
-        decrypted_body, aes_key_buffer, initial_vector_buffer = FlowCryptoService.decrypt_request(
-            encrypted_body,
-            PRIVATE_KEY,
-            PASSPHRASE_ENV
-        )
-
-        if not decrypted_body:
-            return Response(content="Decrypted body is undefined", status_code=400)
+        decrypted_body, aes_key, iv = crypto_service.decrypt_request(encrypted_body)
 
         screen = decrypted_body.get("screen")
         data = decrypted_body.get("data")
@@ -120,14 +117,12 @@ async def waflow_handler(request: Request):
         if not version or not action:
             return Response(content="Missing required fields", status_code=400)
 
-        # 👇 Pass `action` as an extra argument
         screen_data = await flow_handler.handle_flow(screen, version, data, flow_token, action)
 
         if screen_data and all(k in screen_data for k in ["version", "screen", "action", "data"]):
-            encrypted_response = FlowCryptoService.encrypt_response(screen_data, aes_key_buffer, initial_vector_buffer)
+            encrypted_response = crypto_service.encrypt_response(screen_data, aes_key, iv)
             return Response(content=encrypted_response, media_type="text/plain")
         else:
-            logger.error(f"Invalid screenData structure: {screen_data}")
             return Response(content="Invalid screenData", status_code=500)
 
     except Exception as e:

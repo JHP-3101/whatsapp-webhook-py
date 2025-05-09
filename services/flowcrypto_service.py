@@ -1,30 +1,35 @@
+# services/crypto_service.py
+
 import json
 from base64 import b64decode, b64encode
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.primitives import hashes
-from dotenv import dotenv_values
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
+from cryptography.hazmat.backends import default_backend
+
 
 class FlowCryptoService:
-    def __init__(self, env_path: str = ".env"):
-        env = dotenv_values(env_path)
-        private_key_path = env.get("PRIVATE_KEY")
-        passphrase = env.get("PASSPHRASE")
-
-        if not private_key_path:
-            raise ValueError("PRIVATE_KEY_PATH not set in .env")
-
-        with open(private_key_path, "rb") as key_file:
-            private_key_bytes = key_file.read()
-
-        self.private_key = load_pem_private_key(
-            private_key_bytes,
-            password=passphrase.encode("utf-8") if passphrase else None
+    def __init__(self, private_key_pem: str, passphrase: str | None = None):
+        self.private_key = serialization.load_pem_private_key(
+            private_key_pem.encode("utf-8"),
+            password=passphrase.encode("utf-8") if passphrase else None,
+            backend=default_backend()
         )
-        
-    def decrypt_request(self, encrypted_flow_data_b64: str, encrypted_aes_key_b64: str, initial_vector_buffer: str):
+
+    def decrypt_request(self, encrypted_body: bytes):
+        """
+        Parse JSON body and decrypt using RSA + AES-GCM
+        """
+        body = json.loads(encrypted_body)
+
+        encrypted_flow_data_b64 = body["encrypted_flow_data"]
+        encrypted_aes_key_b64 = body["encrypted_aes_key"]
+        initial_vector_b64 = body["initial_vector"]
+
+        flow_data = b64decode(encrypted_flow_data_b64)
+        iv = b64decode(initial_vector_b64)
         encrypted_aes_key = b64decode(encrypted_aes_key_b64)
+
         aes_key = self.private_key.decrypt(
             encrypted_aes_key,
             OAEP(
@@ -34,29 +39,34 @@ class FlowCryptoService:
             )
         )
 
-        flow_data = b64decode(encrypted_flow_data_b64)
-        iv = b64decode(initial_vector_buffer)
-
-        encrypted_data = flow_data[:-16]
-        tag = flow_data[-16:]
+        # Split tag (last 16 bytes) from cipher
+        encrypted_flow_data_body = flow_data[:-16]
+        encrypted_flow_data_tag = flow_data[-16:]
 
         decryptor = Cipher(
             algorithms.AES(aes_key),
-            modes.GCM(iv, tag)
+            modes.GCM(iv, encrypted_flow_data_tag),
+            backend=default_backend()
         ).decryptor()
 
-        decrypted_bytes = decryptor.update(encrypted_data) + decryptor.finalize()
-        decrypted_json = json.loads(decrypted_bytes.decode('utf-8'))
+        decrypted_data_bytes = decryptor.update(encrypted_flow_data_body) + decryptor.finalize()
+        decrypted_data = json.loads(decrypted_data_bytes.decode("utf-8"))
 
-        return decrypted_json, aes_key, iv
+        return decrypted_data, aes_key, iv
 
-    def encrypt_response(self, response_data: dict, aes_key: bytes, request_iv: bytes) -> str:
-        flipped_iv = bytearray([b ^ 0xFF for b in request_iv])
+    def encrypt_response(self, response_data: dict, aes_key: bytes, iv: bytes) -> str:
+        """
+        Encrypt JSON response using AES-GCM with flipped IV
+        """
+        flipped_iv = bytes([b ^ 0xFF for b in iv])
+
         encryptor = Cipher(
             algorithms.AES(aes_key),
-            modes.GCM(bytes(flipped_iv))
+            modes.GCM(flipped_iv),
+            backend=default_backend()
         ).encryptor()
 
-        response_bytes = json.dumps(response_data).encode('utf-8')
-        encrypted = encryptor.update(response_bytes) + encryptor.finalize()
-        return b64encode(encrypted + encryptor.tag).decode('utf-8')
+        encrypted_bytes = encryptor.update(json.dumps(response_data).encode("utf-8")) + encryptor.finalize()
+        tag = encryptor.tag
+
+        return b64encode(encrypted_bytes + tag).decode("utf-8")

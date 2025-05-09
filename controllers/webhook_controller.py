@@ -16,9 +16,9 @@ load_dotenv()
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
-PASSPHRASE = os.environ.get("PRIVATE_KEY_PASSPHRASE")  # if needed
+PASSPHRASE_ENV = os.environ.get("PASSPHRASE_ENV")  # if needed
 
-crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE)
+crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE_ENV)
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)
@@ -104,7 +104,7 @@ async def waflow_handler(request: Request):
     try:
         encrypted_body = await request.body()
         logger.info(f"PRIVATE KEY : {PRIVATE_KEY}")
-        logger.info(f"PASSPHRASE : {PASSPHRASE}")
+        logger.info(f"PASSPHRASE : {PASSPHRASE_ENV}")
 
         decrypted_body, aes_key, iv = crypto_service.decrypt_request(encrypted_body)
 

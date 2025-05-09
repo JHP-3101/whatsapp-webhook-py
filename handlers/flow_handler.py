@@ -4,8 +4,10 @@ from services.whatsapp_service import WhatsAppService
 class FlowHandler :
     def __init__(self, whatsapp_service: WhatsAppService):
         self.whatsapp_service = whatsapp_service
+        self.version = "3.0"
     
     async def handle_flow(self, screen: str, version: str, data: dict, flow_token: str):
+        version = await self.version
         screen_data = {
             "version": version,
             "screen": "REGISTER",
@@ -22,6 +24,7 @@ class FlowHandler :
         return screen_data
     
     def validate_register(self, version: str, data: dict):
+        version = self.version
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")
         phone_number = data.get("phone_number", "")

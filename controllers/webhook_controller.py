@@ -6,17 +6,17 @@ from handlers.contact_handler import ContactHandler
 from handlers.flow_handler import FlowHandler
 from services.flowcrypto_service import FlowCryptoService
 from core.logger import get_logger
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 import os
 
 router = APIRouter()
 logger = get_logger()
-load_dotenv()
+env = dotenv_values(".env")
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
-PRIVATE_KEY = os.getenv("PRIVATE_KEY")
-PASSPHRASE_ENV = os.getenv("PASSPHRASE_ENV")
+PRIVATE_KEY = env.get("PRIVATE_KEY")
+PASSPHRASE_ENV = env.get("PASSPHRASE_ENV")
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)

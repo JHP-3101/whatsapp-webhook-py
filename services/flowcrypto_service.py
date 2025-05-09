@@ -9,8 +9,8 @@ from dotenv import dotenv_values
 class FlowCryptoService:
     def __init__(self, env_path: str = ".env"):
         env = dotenv_values(env_path)
-        private_key_path = env.get("PRIVATE_KEY_PATH")
-        passphrase = env.get("PASSPHRASE_ENV")
+        private_key_path = env.get("PRIVATE_KEY")
+        passphrase = env.get("PASSPHRASE")
 
         if not private_key_path:
             raise ValueError("PRIVATE_KEY_PATH not set in .env")

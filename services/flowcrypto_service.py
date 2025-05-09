@@ -21,7 +21,7 @@ class FlowCryptoService:
 
         encrypted_flow_data_b64 = body["encrypted_flow_data"]
         encrypted_aes_key_b64 = body["encrypted_aes_key"]
-        initial_vector_b64 = body["initial_vector_buffer"]
+        initial_vector_b64 = body["initial_vector"]
 
         flow_data = b64decode(encrypted_flow_data_b64)
         iv = b64decode(initial_vector_b64)

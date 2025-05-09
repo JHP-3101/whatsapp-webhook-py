@@ -1,19 +1,28 @@
 import json
-import os
 from base64 import b64decode, b64encode
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives import hashes
-
+from dotenv import dotenv_values
 
 class FlowCryptoService:
-    def __init__(self, private_key_str: str, passphrase: str = None):
-        self.private_key = load_pem_private_key(
-            private_key_str.encode('utf-8'),
-            password=passphrase.encode('utf-8') if passphrase else None
-        )
+    def __init__(self, env_path: str = ".env"):
+        env = dotenv_values(env_path)
+        private_key_path = env.get("PRIVATE_KEY_PATH")
+        passphrase = env.get("PASSPHRASE_ENV")
 
+        if not private_key_path:
+            raise ValueError("PRIVATE_KEY_PATH not set in .env")
+
+        with open(private_key_path, "rb") as key_file:
+            private_key_bytes = key_file.read()
+
+        self.private_key = load_pem_private_key(
+            private_key_bytes,
+            password=passphrase.encode("utf-8") if passphrase else None
+        )
+        
     def decrypt_request(self, encrypted_flow_data_b64: str, encrypted_aes_key_b64: str, initial_vector_b64: str):
         encrypted_aes_key = b64decode(encrypted_aes_key_b64)
         aes_key = self.private_key.decrypt(

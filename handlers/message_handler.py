@@ -7,7 +7,7 @@ from core.logger import get_logger
 logger = get_logger()
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsAppService, ):
+    def __init__(self, whatsapp_service: WhatsAppService):
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)
         self.plms_service = PLMSService()

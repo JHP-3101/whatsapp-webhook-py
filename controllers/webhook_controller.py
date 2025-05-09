@@ -3,6 +3,8 @@ from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
+from handlers.flow_handler import FlowHandler
+from services.flowcrypto_service import FlowCryptoService
 from core.logger import get_logger
 from dotenv import load_dotenv
 import os
@@ -13,10 +15,13 @@ load_dotenv()
 
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+PASSPHRASE_ENV = os.getenv("PASSPHRASE_ENV")
 
 whatsapp_service = WhatsAppService()
 message_handler = MessageHandler(whatsapp_service)
 contact_handler = ContactHandler(whatsapp_service)
+flow_handler = FlowHandler(whatsapp_service)
 
 @router.get("/login")
 async def plms_login():
@@ -91,3 +96,39 @@ async def webhook_handler(request: Request):
     except Exception as e:
         logger.error(f"Error in webhook_handler: {str(e)}", exc_info=True)
         return Response(content="Internal server error", status_code=200)
+    
+@router.post("/waflow")
+async def waflow_handler(request: Request):
+    try:
+        encrypted_body = await request.body()
+
+        decrypted_body, aes_key_buffer, initial_vector_buffer = FlowCryptoService.decrypt_request(
+            encrypted_body,
+            PRIVATE_KEY,
+            PASSPHRASE_ENV
+        )
+
+        if not decrypted_body:
+            return Response(content="Decrypted body is undefined", status_code=400)
+
+        screen = decrypted_body.get("screen")
+        data = decrypted_body.get("data")
+        version = decrypted_body.get("version")
+        action = decrypted_body.get("action")
+        flow_token = decrypted_body.get("flow_token")
+
+        if not version or not action:
+            return Response(content="Missing required fields", status_code=400)
+
+        screen_data = await flow_handler.handle_flow(screen, version, data, flow_token)
+
+        if screen_data and all(k in screen_data for k in ["version", "screen", "action", "data"]):
+            encrypted_response = FlowCryptoService.encrypt_response(screen_data, aes_key_buffer, initial_vector_buffer)
+            return Response(content=encrypted_response, media_type="text/plain")
+        else:
+            logger.error(f"Invalid screenData structure: {screen_data}")
+            return Response(content="Invalid screenData", status_code=500)
+
+    except Exception as e:
+        logger.error(f"Error waflow handler: {str(e)}", exc_info=True)
+        return Response(content="Internal Server Error", status_code=500)

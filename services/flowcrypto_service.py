@@ -23,7 +23,7 @@ class FlowCryptoService:
             password=passphrase.encode("utf-8") if passphrase else None
         )
         
-    def decrypt_request(self, encrypted_flow_data_b64: str, encrypted_aes_key_b64: str, initial_vector_b64: str):
+    def decrypt_request(self, encrypted_flow_data_b64: str, encrypted_aes_key_b64: str, initial_vector_buffer: str):
         encrypted_aes_key = b64decode(encrypted_aes_key_b64)
         aes_key = self.private_key.decrypt(
             encrypted_aes_key,
@@ -35,7 +35,7 @@ class FlowCryptoService:
         )
 
         flow_data = b64decode(encrypted_flow_data_b64)
-        iv = b64decode(initial_vector_b64)
+        iv = b64decode(initial_vector_buffer)
 
         encrypted_data = flow_data[:-16]
         tag = flow_data[-16:]

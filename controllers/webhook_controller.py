@@ -4,7 +4,7 @@ from services.plms_service import PLMSService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
 from handlers.flow_handler import FlowHandler
-from services.flowcrypto_service import FlowCryptoService
+from services.flow_service import FlowCryptoService
 from core.logger import get_logger
 from dotenv import load_dotenv
 import os
@@ -91,7 +91,7 @@ async def webhook_handler(request: Request):
             if message["type"] == "text":
                 await message_handler.handle_text_message(from_number, message["text"]["body"], username)
             elif message["type"] == "interactive":
-                await message_handler.handle_interactive_message(from_number, message["interactive"], username)
+                await message_handler.handle_interactive_message(from_number, message["interactive"])
 
         return Response(content="Event received", status_code=200)
 

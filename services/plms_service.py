@@ -1,6 +1,5 @@
 import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
-from handlers.contact_handler import ContactHandler
 from core.logger import get_logger
 import hashlib
 
@@ -90,18 +89,19 @@ class PLMSService:
             "id" : phone_number,
             "with_balance" : self.with_balance,
             "token" : self.token,
-            "checsum" : checksum  
+            "checksum" : checksum  
         }
         
         try:
             response = requests.post(f"{self.endpoint}/inquiry", json=payload)
             data = response.json()
             logger.info(f"INQUIRY MEMBER| Response: {data}")
-            card_number = data.get("card_number")
-            email = data.get("email")
-            total_points = data.get("redeemable_pool_units") # "redeemable_pool_units": 1663926
-            expired_point = data.get("eeb_pool_units") # "eeb_pool_units": 993601
-            expired_point_date = data.get("eeb_date") # "eeb_date": "20250531"
+            return data
+            # card_number = data.get("card_number")
+            # email = data.get("email")
+            # total_points = data.get("redeemable_pool_units") # "redeemable_pool_units": 1663926
+            # expired_point = data.get("eeb_pool_units") # "eeb_pool_units": 993601
+            # expired_point_date = data.get("eeb_date") # "eeb_date": "20250531"
             
         except Exception as e:
             logger.error(f"Failed inquiry with status: {e}")

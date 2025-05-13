@@ -1,10 +1,12 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
+from globals.constants import WAFlow
 
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
+        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.whatsapp_service = whatsapp_service
-        self.version = "3.0"
+        self.version = "3"
     
     async def handle_flow(self, screen: str, version: str, data: dict, flow_token: str, action: str = None):
         # Handle health check
@@ -16,7 +18,7 @@ class FlowHandler:
                 "data": {"status": "active"},
             }
 
-        if flow_token == "WAFLOW_ACTIVATE":
+        if flow_token == self.flow_token:
             if screen == "REGISTER":
                 return self.validate_register(version, data)
 

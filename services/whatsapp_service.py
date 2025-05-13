@@ -3,7 +3,7 @@ import httpx
 from core.logger import get_logger
 from fastapi import HTTPException
 from dotenv import load_dotenv
-from globals.constants import Menu
+from globals.constants import Menu, WAFlow
 
 logger = get_logger()
 
@@ -15,6 +15,11 @@ class WhatsAppService:
         self.token = os.getenv("TOKEN_META")
         self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
         self.base_url = "https://graph.facebook.com/v20.0"
+        
+        self.flow_mode = WAFlow.WAFLOW_MODE_ACTIVATE
+        self.flow_id = WAFlow.WAFLOW_ID_ACTIVATE
+        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
+        self.flow_version = "3"
         
     async def _post(self, endpoint: str, payload: dict) :
         url = f"{self.base_url}/{self.phone_number_id}/{endpoint}?access_token={self.token}"
@@ -43,7 +48,7 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
 
-    async def send_main_menu(self, to: str, username: str = "Pelanggan"):
+    async def send_greetings(self, to: str, username: str = "Pelanggan"):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
@@ -51,6 +56,28 @@ class WhatsAppService:
             "interactive": {
                 "type": "list",
                 "body": {"text": f"Halo *_{username}_*! 👋🏻 🤗. Selamat datang di layanan Member *Alfamidi*. Silahkan pilih layanan yang anda butuhkan."},
+                "action": {
+                    "sections": [{
+                        "title": "Pilih Menu",
+                        "rows": [
+                            {"id": Menu.MEMBER, "title": "Member"},
+                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
+                        ]
+                    }],
+                    "button": "Pilih Menu"
+                }
+            }
+        }
+        await self._post("messages", payload)
+        
+    async def send_main_menu(self, to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": f"Silahkan pilih layanan yang anda butuhkan."},
                 "action": {
                     "sections": [{
                         "title": "Pilih Menu",
@@ -111,3 +138,41 @@ class WhatsAppService:
             }
         }
         await self._post("messages", payload)
+        
+    async def send_flow_message(self, to: str):
+
+        payload = {
+            "recipient_type": "individual",
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "flow",
+                "body": {
+                    "text": "📝 Registrasi Member"
+                },
+                "footer": {
+                    "text": "Pastikan data yang anda isi benar."
+                },
+                "action": {
+                    "name": "flow",
+                    "parameters": {
+                        "flow_message_version": self.flow_version,
+                        "flow_mode": self.flow_mode,
+                        "flow_token": self.flow_token,
+                        "flow_id": self.flow_id,
+                        "flow_cta": "Daftar Sekarang",
+                        "flow_action": "navigate",
+                        "flow_action_payload": {
+                            "screen": "REGISTER",
+                            "data": {
+                                "phone_number": to, 
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        await self._post("messages", payload)
+    

@@ -16,9 +16,9 @@ class MessageHandler:
         if text.lower() == "test":
             await self.whatsapp_service.send_message(from_number, "hello world!")
         else:
-            await self.whatsapp_service.send_main_menu(from_number, username)
+            await self.whatsapp_service.send_greetings(from_number, username)
 
-    async def handle_interactive_message(self, from_number: str, interactive_data: dict, username: str):
+    async def handle_interactive_message(self, from_number: str, interactive_data: dict):
         reply_id = interactive_data.get("list_reply", {}).get("id")
         
         if reply_id == Menu.MEMBER:
@@ -32,7 +32,10 @@ class MessageHandler:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu VALIDASI")
             
         elif reply_id == Menu.MAIN_MENU:
-            await self.whatsapp_service.send_main_menu(from_number, username)
+            await self.whatsapp_service.send_main_menu(from_number)
+            
+        elif reply_id == Menu.MEMBER_REGISTRASI:
+            await self.whatsapp_service.send_flow_message(from_number)
             
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")

@@ -24,6 +24,10 @@ class PLMSUser(str, Enum):
     
 class PLMSEndpoint (str, Enum):
     ENDPOINT = "https://stg-partnerv2.gli.id/v2/midikring"
-
-
+    
+class WAFlow (str, Enum):
+    WAFLOW_MODE_ACTIVATE = "draft"
+    WAFLOW_TOKEN_ACTIVATE = "wqcOJyw9BVAQQ5BYtmG0RBFOlzNrFbt2rEXp1m8jnWk="
+    WAFLOW_ID_ACTIVATE = "645744804970894"
+    
 

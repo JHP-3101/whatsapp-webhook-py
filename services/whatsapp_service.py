@@ -140,9 +140,7 @@ class WhatsAppService:
         await self._post("messages", payload)
         
     async def send_flow_message(self, to: str):
-
         payload = {
-            "recipient_type": "individual",
             "messaging_product": "whatsapp",
             "to": to,
             "type": "interactive",
@@ -151,20 +149,17 @@ class WhatsAppService:
                 "body": {
                     "text": "📝 Registrasi Member"
                 },
-                "footer": {
-                    "text": "Pastikan data yang anda isi benar."
-                },
                 "action": {
                     "name": "flow",
                     "parameters": {
                         "flow_message_version": self.flow_version,
-                        "flow_mode": self.flow_mode,
+                        "mode": self.flow_mode,
                         "flow_token": self.flow_token,
                         "flow_id": self.flow_id,
                         "flow_cta": "Daftar Sekarang",
                         "flow_action": "navigate",
                         "flow_action_payload": {
-                            "screen": "REGISTER",
+                            "screen": "CONFIRM",
                             "data": {
                                 "phone_number": to, 
                             },

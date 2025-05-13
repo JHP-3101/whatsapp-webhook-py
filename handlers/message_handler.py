@@ -28,7 +28,7 @@ class MessageHandler:
         elif reply_id == Menu.MENU_2:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu 2")
             
-        elif reply_id == Menu.MEMBER_STATUS:
+        elif reply_id == Menu.MEMBER_STATUS_KARTU:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu VALIDASI")
             
         elif reply_id == Menu.MAIN_MENU:

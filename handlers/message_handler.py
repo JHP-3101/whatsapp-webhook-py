@@ -35,7 +35,7 @@ class MessageHandler:
             await self.whatsapp_service.send_main_menu(from_number)
             
         elif reply_id == Menu.MEMBER_REGISTRASI:
-            await self.whatsapp_service.send_flow_message(from_number)
+            await self.whatsapp_service.send_form_register(from_number)
             
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")

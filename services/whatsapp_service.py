@@ -139,7 +139,7 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
         
-    async def send_flow_message(self, to: str):
+    async def send_form_register(self, to: str):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
@@ -159,7 +159,7 @@ class WhatsAppService:
                         "flow_cta": "Daftar Sekarang",
                         "flow_action": "navigate",
                         "flow_action_payload": {
-                            "screen": "CONFIRM",
+                            "screen": "REGISTER",
                             "data": {
                                 "phone_number": to, 
                             },
@@ -168,6 +168,5 @@ class WhatsAppService:
                 }
             }
         }
-
         await self._post("messages", payload)
     

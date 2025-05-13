@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 from controllers.webhook_controller import router as webhook_router
-from core.tokengenerator import FlowTokenGenerator
 from dotenv import load_dotenv
 import os
 
@@ -10,10 +9,6 @@ load_dotenv()  # Load env variables from .env
 # Environment Variables
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 3006))
-
-token_generator = FlowTokenGenerator()
-token = token_generator.generate_token()
-print(f"WaFlow Token: {token}")
 
 app = FastAPI(
     title="WhatsApp Webhook Service",

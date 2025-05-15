@@ -10,7 +10,7 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
-        self.register_data = FlowHandler.validate_register()
+        self.register_data = FlowHandler.validate_register
         self.token = None
         self.mode = "mobile"
         self.with_balance = 1

@@ -106,6 +106,17 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Failed inquiry with status: {e}")
             raise
+    
+    def member_activation(self, phone_number: str):
+        if not self.token:
+            self.login()
+            
+        phone_number = str(phone_number)
+        
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+    
+        
             
             
         

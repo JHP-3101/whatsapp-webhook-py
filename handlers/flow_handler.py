@@ -44,7 +44,6 @@ class FlowHandler:
         }
 
     def validate_register(self, version: str, data: dict):
-        logger.info(f"REGSITRATION DATA: {data}")
         
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")

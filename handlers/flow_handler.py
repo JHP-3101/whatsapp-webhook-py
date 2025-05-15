@@ -77,43 +77,4 @@ class FlowHandler:
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
         return response.get("data")
     
-    async def confirm_register(self, version: str, data: dict):
-        phone_number = data.get("phone_number")
-
-        try:
-            result = self.plms_service.member_activation(phone_number)
-            code = result.get("response_code")
-            member_id = result.get("member_id")
-            card_number = result.get("card_number")
-            logger.info(f"PLMS Activation Response: {result}")
-            
-            if code == "00" :
-                await self.whatsapp_service.send_message(phone_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi. * Nomor member: {member_id}, * Nomor kartu: {card_number}")
-                return {
-                    "version": version,
-                    "screen": "DONE",
-                    "action": "submit",
-                    "data": {"status": "success"}
-                }
-            elif code == "E050":
-                await self.whatsapp_service.send_message(phone_number, f"Pendaftaran gagal.\n\nNomor anda {phone_number} telah terdafatar sebagai member.")
-                return {
-                    "version": version,
-                    "screen": "CONFIRM",
-                    "action": "error",
-                    "data": {"status": "failed", "message": str(e)}
-                }
-            else : 
-                await self.whatsapp_service.send_message(phone_number, "Terjadi gangguan. Mohon tunggu")
-            
-            
-        except Exception as e:
-            logger.error(f"Activation failed: {e}")
-            return {
-                "version": version,
-                "screen": "CONFIRM",
-                "action": "error",
-                "data": {"status": "failed", "message": str(e)}
-            }
-    
         

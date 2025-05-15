@@ -85,14 +85,13 @@ class PLMSService:
         
         data = self.register_data()
         
-        # Data untuk payload dan checksum
-        name = data.get("name", "")
-        birth_date = self.register_data.get("birth_date", "")  # Format: DDMMYYYY
+        name = data.get("name")
+        birth_date = self.register_data.get("birth_date") 
         email = data.get("email", "")
-        card_number = data.get("card_number", "")
-        gender = data.get("gender", "")
-        marital = data.get("marital", "")
-        address = data.get("address", "")
+        card_number = data.get("card_number")
+        gender = data.get("gender")
+        marital = data.get("marital")
+        address = data.get("address")
         
         try:
             birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")

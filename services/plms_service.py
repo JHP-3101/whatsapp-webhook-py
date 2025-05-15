@@ -1,5 +1,6 @@
 import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
+from handlers.flow_handler import FlowHandler
 from core.logger import get_logger
 import hashlib
 
@@ -8,6 +9,7 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
+        self.register_data = FlowHandler.validate_register()
         self.token = None
         self.mode = "mobile"
         self.with_balance = 1
@@ -72,55 +74,58 @@ class PLMSService:
             logger.error(f"Validate member failed: {e}")
             raise
         
-    def inquiry(self, phone_number: str):
-        if not self.token:
-            self.login()
-        
-        phone_number = str(phone_number)
-        
-        if phone_number.startswith("62"):
-            phone_number = "0" + phone_number[2:]
-            
-        text = self.mode + phone_number + self.with_balance + self.token + PLMSSecretKey.SECRET_KEY.value
-        checksum = str(hashlib.sha256(text.encode()).hexdigest())
-        
-        payload = {
-            "mode" : self.mode,
-            "id" : phone_number,
-            "with_balance" : self.with_balance,
-            "token" : self.token,
-            "checksum" : checksum  
-        }
-        
-        try:
-            response = requests.post(f"{self.endpoint}/inquiry", json=payload)
-            data = response.json()
-            logger.info(f"INQUIRY MEMBER| Response: {data}")
-            return data
-            # card_number = data.get("card_number")
-            # email = data.get("email")
-            # total_points = data.get("redeemable_pool_units") # "redeemable_pool_units": 1663926
-            # expired_point = data.get("eeb_pool_units") # "eeb_pool_units": 993601
-            # expired_point_date = data.get("eeb_date") # "eeb_date": "20250531"
-            
-        except Exception as e:
-            logger.error(f"Failed inquiry with status: {e}")
-            raise
-    
     def member_activation(self, phone_number: str):
         if not self.token:
             self.login()
-            
-        phone_number = str(phone_number)
-        
+
+        phone_number = str(data.get("phone_number", ""))
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
-    
         
-            
-            
+        data = self.register_data()
         
-            
+        # Data untuk payload dan checksum
+        name = data.get("name", "")
+        birth_date = self.register_data.get("birth_date", "")  # Format: DDMMYYYY
+        email = data.get("email", "")
+        card_number = data.get("card_number", "")
+        gender = data.get("gender", "")
+        marital = data.get("marital", "")
+        address = data.get("address", "")
         
+        try:
+            birth_date = datetime.strptime(birth_date_raw, "%Y-%m-%d").strftime("%d%m%Y")
+        except Exception:
+            birth_date = birth_date_raw  # fallback kalau parsing gagal
         
+        # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
+        text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        payload["checksum"] = checksum
+
+        payload = {
+            "token": self.token,
+            "mode": self.mode,
+            "withbalance": self.with_balance,
+            "phone_number": phone_number,
+            "card_number": card_number,
+            "name": name,
+            "birth_date": birth_date,
+            "email": email,
+            "gender": gender,
+            "marital_status": marital,
+            "address": address
+        }
+
+        try:
+            response = requests.post(f"{self.endpoint}/memberactivation", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"MEMBER ACTIVATION | Response: {data}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Member activation failed: {e}")
+            raise
+
         

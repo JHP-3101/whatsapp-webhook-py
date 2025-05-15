@@ -1,5 +1,6 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
+from services.plms_service import PLMSService
 from globals.constants import WAFlow
 from datetime import datetime
 import re
@@ -11,6 +12,7 @@ class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
         self.flow_token = WAFlow.WAFLOW_TOKEN_REGISTER
         self.whatsapp_service = whatsapp_service
+        self.plms_service = PLMSService()
         self.version = "3"
     
     async def handle_flow(self, screen: str, version: str, data: dict, flow_token: str, action: str = None):
@@ -33,7 +35,9 @@ class FlowHandler:
 
         if flow_token == self.flow_token:
             if screen == "REGISTER":
-                return self.validate_register(version, data)
+                return await self.validate_register(version, data)
+            if screen == "CONFIRM":
+                return await self.confirm_register(version, data)
 
         # Default response
         return {
@@ -43,8 +47,7 @@ class FlowHandler:
             "data": {"message": "Unhandled flow"},
         }
 
-    def validate_register(self, version: str, data: dict):
-        logger.info(f"RESPONSE REGISTER FLOW {data}")
+    async def validate_register(self, version: str, data: dict):
         
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")
@@ -54,14 +57,6 @@ class FlowHandler:
         gender = data.get("gender", "")
         marital = data.get("marital", "")
         address = data.get("address", "")
-        
-        formatted_birth_date = ""
-        try:
-            if birth_date:
-                formatted_birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
-        except ValueError:
-            logger.warning(f"Invalid birth_date format: {birth_date}")
-            formatted_birth_date = birth_date
             
         response = {
                 "version": version,
@@ -71,7 +66,7 @@ class FlowHandler:
                     "phone_number": phone_number,
                     "card_number": card_number,
                     "name": name,
-                    "birth_date": formatted_birth_date,
+                    "birth_date": birth_date,
                     "email": email,
                     "gender": gender,
                     "marital": marital,
@@ -79,6 +74,46 @@ class FlowHandler:
                 }
             }
         
-        logger.info(f"RESPONSE FROM REGISTRATION FLOW | {response}")
+        logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
+        return response.get("data")
+    
+    async def confirm_register(self, version: str, data: dict):
+        phone_number = data.get("phone_number")
 
-        return response
+        try:
+            result = self.plms_service.member_activation(phone_number)
+            code = result.get("response_code")
+            member_id = result.get("member_id")
+            card_number = result.get("card_number")
+            logger.info(f"PLMS Activation Response: {result}")
+            
+            if code == "00" :
+                await self.whatsapp_service.send_message(phone_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi. * Nomor member: {member_id}, * Nomor kartu: {card_number}")
+                return {
+                    "version": version,
+                    "screen": "DONE",
+                    "action": "submit",
+                    "data": {"status": "success"}
+                }
+            elif code == "E050":
+                await self.whatsapp_service.send_message(phone_number, f"Pendaftaran gagal.\n\nNomor anda {phone_number} telah terdafatar sebagai member.")
+                return {
+                    "version": version,
+                    "screen": "CONFIRM",
+                    "action": "error",
+                    "data": {"status": "failed", "message": str(e)}
+                }
+            else : 
+                await self.whatsapp_service.send_message(phone_number, "Terjadi gangguan. Mohon tunggu")
+            
+            
+        except Exception as e:
+            logger.error(f"Activation failed: {e}")
+            return {
+                "version": version,
+                "screen": "CONFIRM",
+                "action": "error",
+                "data": {"status": "failed", "message": str(e)}
+            }
+    
+        

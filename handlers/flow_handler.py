@@ -1,7 +1,7 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from globals.constants import WAFlow
-import datetime
+from datetime import datetime
 import re
 from core.logger import get_logger
 

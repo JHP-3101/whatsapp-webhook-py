@@ -2,6 +2,9 @@ from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from globals.constants import WAFlow
 import re
+from core.logger import get_logger
+
+logger = get_logger()
 
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
@@ -40,6 +43,8 @@ class FlowHandler:
         }
 
     def validate_register(self, version: str, data: dict):
+        logger.info(f"REGSITRATION DATA: {data}")
+        
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")
         phone_number = data.get("phone_number", "")

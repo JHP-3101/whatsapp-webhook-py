@@ -2,6 +2,7 @@ import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
 from handlers.flow_handler import FlowHandler
 from core.logger import get_logger
+from datetime import datetime
 import hashlib
 
 logger = get_logger()
@@ -94,9 +95,9 @@ class PLMSService:
         address = data.get("address", "")
         
         try:
-            birth_date = datetime.strptime(birth_date_raw, "%Y-%m-%d").strftime("%d%m%Y")
+            birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
         except Exception:
-            birth_date = birth_date_raw  # fallback kalau parsing gagal
+            birth_date = birth_date  # fallback kalau parsing gagal
         
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value

@@ -1,10 +1,11 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from globals.constants import WAFlow
+import re
 
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
-        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
+        self.flow_token = WAFlow.WAFLOW_TOKEN_REGISTER
         self.whatsapp_service = whatsapp_service
         self.version = "3"
     
@@ -13,9 +14,17 @@ class FlowHandler:
         if action == "ping":
             return {
                 "version": self.version,
-                "screen": screen or "REGISTER",
+                "screen": screen,
                 "action": "ping",
                 "data": {"status": "active"},
+            }
+            
+        if flow_token != self.flow_token:
+            return {
+                "version": self.version,
+                "screen": screen or "UNKNOWN",
+                "action": "error",
+                "data": {"message": "Invalid flow token"},
             }
 
         if flow_token == self.flow_token:
@@ -34,29 +43,22 @@ class FlowHandler:
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")
         phone_number = data.get("phone_number", "")
-
-        name_error = "" if name else "Nama wajib diisi"
-        birth_date_error = "" if birth_date else "Tanggal lahir wajib diisi"
-
-        if name_error or birth_date_error:
-            return {
-                "version": self.version,
-                "screen": "REGISTER",
-                "action": "update",
-                "data": {
-                    "name_error": name_error,
-                    "birth_date_error": birth_date_error,
-                    "phone_number": phone_number,
-                }
-            }
+        email = data.get("email", "")
+        gender = data.get("gender", "")
+        marital = data.get("marital", "")
+        address = data.get("address", "")
 
         return {
-            "version": self.version,
-            "screen": "CONFIRM",
-            "action": "update",
-            "data": {
-                "name": name,
-                "birth_date": birth_date,
-                "phone_number": phone_number,
+                "version": version,
+                "screen": "CONFIRM",
+                "action": "update",
+                "data": {
+                    "phone_number": phone_number,
+                    "name": name,
+                    "birth_date": birth_date,
+                    "email": email,
+                    "gender": gender,
+                    "marital": marital,
+                    "address": address
+                }
             }
-        }

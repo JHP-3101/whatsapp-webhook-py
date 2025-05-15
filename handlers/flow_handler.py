@@ -1,6 +1,7 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from globals.constants import WAFlow
+import datetime
 import re
 from core.logger import get_logger
 
@@ -42,45 +43,38 @@ class FlowHandler:
             "data": {"message": "Unhandled flow"},
         }
 
-from datetime import datetime
-import logging
+    def validate_register(self, version: str, data: dict):
+        logger.info(f"REGSITRATION DATA: {data}")
+        
+        name = data.get("name", "")
+        birth_date = data.get("birth_date", "")
+        phone_number = data.get("phone_number", "")
+        card_number = data.get("card_number", "")
+        email = data.get("email", "")
+        gender = data.get("gender", "")
+        marital = data.get("marital", "")
+        address = data.get("address", "")
+        
+        formatted_birth_date = ""
+        try:
+            if birth_date:
+                formatted_birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
+        except ValueError:
+            logger.warning(f"Invalid birth_date format: {birth_date}")
+            formatted_birth_date = birth_date
 
-logger = logging.getLogger(__name__)
-
-def validate_register(self, version: str, data: dict):
-    logger.info(f"REGISTRATION DATA: {data}")
-    
-    name = data.get("name", "")
-    birth_date = data.get("birth_date", "")
-    phone_number = data.get("phone_number", "")
-    card_number = data.get("card_number", "")
-    email = data.get("email", "")
-    gender = data.get("gender", "")
-    marital = data.get("marital", "")
-    address = data.get("address", "")
-
-    # Convert birth_date to DDMMYYYY format
-    formatted_birth_date = ""
-    try:
-        if birth_date:
-            formatted_birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
-    except ValueError:
-        logger.warning(f"Invalid birth_date format: {birth_date}")
-        formatted_birth_date = birth_date  # fallback to original
-
-    return {
-        "version": version,
-        "screen": "CONFIRM",
-        "action": "update",
-        "data": {
-            "phone_number": phone_number,
-            "card_number": card_number,
-            "name": name,
-            "birth_date": formatted_birth_date,
-            "email": email,
-            "gender": gender,
-            "marital": marital,
-            "address": address
-        }
-    }
-
+        return {
+                "version": version,
+                "screen": "CONFIRM",
+                "action": "update",
+                "data": {
+                    "phone_number": phone_number,
+                    "card_number": card_number,
+                    "name": name,
+                    "birth_date": formatted_birth_date,
+                    "email": email,
+                    "gender": gender,
+                    "marital": marital,
+                    "address": address
+                }
+            }

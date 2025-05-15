@@ -44,7 +44,6 @@ class FlowHandler:
         }
 
     def validate_register(self, version: str, data: dict):
-        
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")
         phone_number = data.get("phone_number", "")
@@ -61,8 +60,8 @@ class FlowHandler:
         except ValueError:
             logger.warning(f"Invalid birth_date format: {birth_date}")
             formatted_birth_date = birth_date
-
-        return {
+            
+        response = {
                 "version": version,
                 "screen": "CONFIRM",
                 "action": "update",
@@ -77,3 +76,7 @@ class FlowHandler:
                     "address": address
                 }
             }
+        
+        logger.info(f"RESPONSE FROM REGISTRATION FLOW | {response}")
+
+        return response

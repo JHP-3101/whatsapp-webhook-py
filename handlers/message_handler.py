@@ -47,13 +47,12 @@ class MessageHandler:
         try:
             flowData = interactive_data.get("response_json")
             logger.info(f"RESPONSE FROM FLOW {flowData}")
-            responseJSON = json.loads(flowData)
             
             # Handle Member Activation Response
-            validateTokenActivation = responseJSON.get("flow_token")
+            validateTokenActivation = flowData.get("flow_token")
             if validateTokenActivation == self.flow_token_activation:
                 contact = {"wa_id": from_number}
-                await self.member_activation_status(from_number, contact, responseJSON)
+                await self.member_activation_status(from_number, contact, flowData)
                 
             else :
                 logger.error("Validation Error. Activation Token Not Found")

@@ -85,7 +85,7 @@ class PLMSService:
         
         name = data.get("name")
         birth_date = data.get("birth_date") 
-        email = data.get("email", "")
+        email = data.get("email")
         card_number = data.get("card_number")
         gender = data.get("gender")
         marital = data.get("marital")

@@ -21,9 +21,9 @@ PASSPHRASE_ENV = os.environ.get("PASSPHRASE_ENV")  # if needed
 crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE_ENV)
 
 whatsapp_service = WhatsAppService()
+plms_service = PLMSService()
 flow_handler = FlowHandler(whatsapp_service)
-plms_service = PLMSService(flow_handler)
-message_handler = MessageHandler(whatsapp_service, plms_service)
+message_handler = MessageHandler(whatsapp_service)
 contact_handler = ContactHandler(whatsapp_service)
 
 

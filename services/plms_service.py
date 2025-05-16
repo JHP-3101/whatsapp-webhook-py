@@ -10,7 +10,7 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
-        self.register_data = FlowHandler.validate_register
+        self.flow_handler = FlowHandler()
         self.token = None
         self.mode = "mobile"
         self.with_balance = 1
@@ -79,7 +79,7 @@ class PLMSService:
         if not self.token:
             self.login()
             
-        data = self.register_data
+        data = self.flow_handler.validate_register
 
         phone_number = str(data.get("phone_number", ""))
         if phone_number.startswith("62"):

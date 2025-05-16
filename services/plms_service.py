@@ -78,12 +78,12 @@ class PLMSService:
     def member_activation(self, phone_number: str):
         if not self.token:
             self.login()
+            
+        data = self.register_data
 
         phone_number = str(data.get("phone_number", ""))
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
-        
-        data = self.register_data()
         
         name = data.get("name")
         birth_date = self.register_data.get("birth_date") 

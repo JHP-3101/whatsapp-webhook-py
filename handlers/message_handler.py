@@ -9,11 +9,11 @@ from core.logger import get_logger
 logger = get_logger()
 
 class MessageHandler:
-    def __init__(self, whatsapp_service: WhatsAppService):
+    def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
         self.flow_token_activation = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)
-        self.plms_service = PLMSService()
+        self.plms_service = plms_service
 
     async def handle_text_message(self, from_number: str, text: str, username: str):
         if text.lower() == "test":

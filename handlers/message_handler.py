@@ -22,7 +22,7 @@ class MessageHandler:
             await self.whatsapp_service.send_greetings(from_number, username)
 
     async def handle_list_reply(self, from_number: str, interactive_data: dict):
-        reply_id = interactive_data.get("list_reply", {}).get("id")
+        reply_id = interactive_data.get("id")
         
         if reply_id == Menu.MEMBER:
             contact = {"wa_id": from_number}
@@ -44,13 +44,18 @@ class MessageHandler:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")
     
     async def handle_nfm_reply(self, from_number: str, interactive_data: dict):
-        flowData = interactive_data.get("nfm_reply", {}).get("response_json")
-
+        phone_number = from_number
+        
         try:
+            flowData = interactive_data.get("response_json")
             responseJSON = json.loads(flowData)
-            validateToken = responseJSON["flow_token"]
             
-            result = self.plms_service.member_activation(from_number)
+            validateToken = responseJSON.get("flow_token")
+            if not validateToken:
+                await self.whatsapp_service.send_message(from_number, "Token tidak ditemukan.")
+                return
+            
+            result = self.plms_service.member_activation(phone_number)
             code = result.get("response_code")
             member_id = result.get("member_id")
             card_number = result.get("card_number")
@@ -59,12 +64,12 @@ class MessageHandler:
             if code == "00" and validateToken == self.flow_token:
                 await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi. * Nomor member: {member_id}, * Nomor kartu: {card_number}")
             elif code == "E050" and validateToken == self.flow_token:
-                await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdafatar sebagai member.")
+                await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdaftar sebagai member.")
             else : 
                 await self.whatsapp_service.send_message(from_number, "Terjadi gangguan. Mohon tunggu")
             
         except Exception as e:
-            logger.error(f"Activation failed: {e}")   
+            logger.error(f"Error in handle_nfm_reply: {str(e)}", exc_info=True)  
             
     async def validate_member(self, from_number: str, contact:dict):
         phone_number = await self.contact_handler.get_phone_number(contact)

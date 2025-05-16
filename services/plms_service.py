@@ -84,7 +84,7 @@ class PLMSService:
             phone_number = "0" + phone_number[2:]
         
         name = data.get("name")
-        birth_date = self.register_data.get("birth_date") 
+        birth_date = data.get("birth_date") 
         email = data.get("email", "")
         card_number = data.get("card_number")
         gender = data.get("gender")

@@ -48,6 +48,7 @@ class MessageHandler:
         
         try:
             flowData = interactive_data.get("response_json")
+            logger.info(f"RESPONSE FROM FLOW | {flowData}")
             responseJSON = json.loads(flowData)
             
             validateToken = responseJSON.get("flow_token")
@@ -62,9 +63,12 @@ class MessageHandler:
             logger.info(f"PLMS Activation Response: {result}")
             
             if code == "00" and validateToken == self.flow_token:
-                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi. * Nomor member: {member_id}, * Nomor kartu: {card_number}")
+                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi.\n\n"
+                    f"* Nomor member: {member_id},\n"
+                    f"* Nomor kartu: {card_number}"
+                )
             elif code == "E050" and validateToken == self.flow_token:
-                await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdaftar sebagai member.")
+                await self.whatsapp_service.send_message(from_number, f"Nomor anda {from_number} telah terdaftar sebagai member.")
             else : 
                 await self.whatsapp_service.send_message(from_number, "Terjadi gangguan. Mohon tunggu")
             

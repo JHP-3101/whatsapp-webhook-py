@@ -33,8 +33,6 @@ class FlowHandler:
         if flow_token == self.flow_token:
             if screen == "REGISTER":
                 return await self.validate_register(version, data)
-            if screen == "CONFIRM":
-                return await self.confirm_register(version, data)
 
         # Default response
         return {
@@ -73,4 +71,6 @@ class FlowHandler:
         
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
         return response 
+        
+        
    

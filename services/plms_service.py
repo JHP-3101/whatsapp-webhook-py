@@ -1,6 +1,6 @@
 import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
-from handlers.flow_handler import FlowHandler
+from handlers.message_handler import MessageHandler
 from core.logger import get_logger
 from datetime import datetime
 import hashlib
@@ -10,7 +10,7 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
-        self.register_data = FlowHandler.validate_register
+        self.data_activation = MessageHandler.handle_nfm_reply
         self.token = None
         self.mode = "mobile"
         self.with_balance = 1
@@ -83,15 +83,17 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
         
-        data = self.register_data()
+        data = self.data_activation()
         
-        name = data.get("name")
-        birth_date = self.register_data.get("birth_date") 
+        # Extract fields from payload
+        name = data.get("name", "")
+        birth_date = data.get("birth_date", "")
+        phone_number = data.get("phone_number", "")
         email = data.get("email", "")
-        card_number = data.get("card_number")
-        gender = data.get("gender")
-        marital = data.get("marital")
-        address = data.get("address")
+        card_number = data.get("card_number", "")
+        gender = data.get("gender", "")
+        marital = data.get("marital", "")
+        address = data.get("address", "")
         
         try:
             birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")

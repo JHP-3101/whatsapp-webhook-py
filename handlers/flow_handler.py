@@ -1,6 +1,5 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
-from services.plms_service import PLMSService
 from globals.constants import WAFlow
 from core.logger import get_logger
 
@@ -10,7 +9,6 @@ class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
         self.flow_token = WAFlow.WAFLOW_TOKEN_REGISTER
         self.whatsapp_service = whatsapp_service
-        self.plms_service = PLMSService()
         self.version = "3"
     
     async def handle_flow(self, screen: str, version: str, data: dict, flow_token: str, action: str = None):

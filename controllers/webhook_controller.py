@@ -60,7 +60,7 @@ async def webhook_handler(request: Request):
     try:
         body = await request.json()
         # Know The Body Of The Messages
-        logger.info(f"Received webhook body: {body}") 
+        # logger.info(f"Received webhook body: {body}") 
 
         if not body.get("object"):
             return Response(content="Invalid object", status_code=200)

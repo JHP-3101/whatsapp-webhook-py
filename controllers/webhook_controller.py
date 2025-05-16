@@ -60,7 +60,7 @@ async def webhook_handler(request: Request):
     try:
         body = await request.json()
         # Know The Body Of The Messages
-        # logger.info(f"Received webhook body: {body}") 
+        logger.info(f"Received webhook body: {body}") 
 
         if not body.get("object"):
             return Response(content="Invalid object", status_code=200)
@@ -90,8 +90,15 @@ async def webhook_handler(request: Request):
 
             if message["type"] == "text":
                 await message_handler.handle_text_message(from_number, message["text"]["body"], username)
-            elif message["type"] == "interactive":
-                await message_handler.handle_interactive_message(from_number, message["interactive"])
+                
+            if message["type"] == "interactive":
+                interactive_type = message["interactive"].get("type")
+                
+                if interactive_type == "list_reply":
+                    await message_handler.handle_list_reply(from_number, message["interactive"]["list_reply"], username)
+                elif interactive_type == "nfm_reply":
+                    await message_handler.handle_nfm_reply(from_number, message["interactive"]["nfm_reply"], username)
+                
 
         return Response(content="Event received", status_code=200)
 

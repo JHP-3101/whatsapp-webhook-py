@@ -2,12 +2,13 @@ from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from globals.constants import WAFlow
 from core.logger import get_logger
+import json
 
 logger = get_logger()
 
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService):
-        self.flow_token = WAFlow.WAFLOW_TOKEN_REGISTER
+        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.whatsapp_service = whatsapp_service
         self.version = "3"
     
@@ -71,8 +72,5 @@ class FlowHandler:
             }
         
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
-        return response
-    
-
-    
-        
+        return response 
+   

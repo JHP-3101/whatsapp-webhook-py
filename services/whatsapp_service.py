@@ -16,9 +16,9 @@ class WhatsAppService:
         self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
         self.base_url = "https://graph.facebook.com/v20.0"
         
-        self.flow_mode = WAFlow.WAFLOW_MODE_REGISTER
-        self.flow_id = WAFlow.WAFLOW_ID_REGISTER
-        self.flow_token = WAFlow.WAFLOW_TOKEN_REGISTER
+        self.flow_mode = WAFlow.WAFLOW_MODE_ACTIVATE
+        self.flow_id = WAFlow.WAFLOW_ID_ACTIVATE
+        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.flow_version = "3"
         
     async def _post(self, endpoint: str, payload: dict) :

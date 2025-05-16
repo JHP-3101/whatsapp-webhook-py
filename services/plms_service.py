@@ -97,20 +97,18 @@ class PLMSService:
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
-        payload["checksum"] = checksum
 
         payload = {
-            "token": self.token,
-            "mode": self.mode,
-            "withbalance": self.with_balance,
-            "phone_number": phone_number,
-            "card_number": card_number,
             "name": name,
             "birth_date": birth_date,
+            "phone_number": phone_number,
             "email": email,
+            "card_number": card_number,
             "gender": gender,
-            "marital_status": marital,
-            "address": address
+            "marital": marital,
+            "address": address,      
+            "token": self.token,
+            "checksum": checksum
         }
 
         try:

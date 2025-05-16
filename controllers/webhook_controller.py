@@ -21,9 +21,11 @@ PASSPHRASE_ENV = os.environ.get("PASSPHRASE_ENV")  # if needed
 crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE_ENV)
 
 whatsapp_service = WhatsAppService()
-message_handler = MessageHandler(whatsapp_service)
-contact_handler = ContactHandler(whatsapp_service)
 flow_handler = FlowHandler(whatsapp_service)
+plms_service = PLMSService(flow_handler)
+message_handler = MessageHandler(whatsapp_service, plms_service)
+contact_handler = ContactHandler(whatsapp_service)
+
 
 @router.get("/login")
 async def plms_login():

@@ -1,6 +1,5 @@
 import requests
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
-from handlers.flow_handler import FlowHandler
 from core.logger import get_logger
 from datetime import datetime
 import hashlib
@@ -10,7 +9,6 @@ logger = get_logger()
 class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
-        self.flow_handler = FlowHandler()
         self.token = None
         self.mode = "mobile"
         self.with_balance = 1
@@ -75,11 +73,11 @@ class PLMSService:
             logger.error(f"Validate member failed: {e}")
             raise
         
-    def member_activation(self, phone_number: str):
+    def member_activation(self, phone_number: str, register_data: dict):
         if not self.token:
             self.login()
             
-        data = self.flow_handler.validate_register
+        data = register_data
 
         phone_number = str(data.get("phone_number", ""))
         if phone_number.startswith("62"):

@@ -53,7 +53,7 @@ class MessageHandler:
             validateTokenActivation = responseJSON.get("flow_token")
             if validateTokenActivation == self.flow_token_activation:
                 contact = {"wa_id": from_number}
-                await self.member_activation_status(from_number, contact)
+                await self.member_activation_status(from_number, contact, responseJSON)
                 
             else :
                 logger.error("Validation Error. Activation Token Not Found")
@@ -61,14 +61,14 @@ class MessageHandler:
         except Exception as e:
             logger.error(f"Error in handle_nfm_reply: {str(e)}", exc_info=True)  
             
-    async def member_activation_status(self, from_number: str, contact: dict):
+    async def member_activation_status(self, from_number: str, contact: dict, register_data: dict):
         phone_number = await self.contact_handler.get_phone_number(contact)
         if not phone_number or phone_number == "Unknown" :
             logger.info(f"Failed to get phone number")
             return
         
         try :
-            result = self.plms_service.member_activation(phone_number)
+            result = self.plms_service.member_activation(phone_number, register_data)
             code = result.get("response_code")
             member_id = result.get("member_id")
             card_number = result.get("card_number")

@@ -42,6 +42,8 @@ class PLMSService:
     def validate_member(self, phone_number: str):
         if not self.token:
             self.login()
+            
+        logger.info(f"TOKEN : {self.token}")
         
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]

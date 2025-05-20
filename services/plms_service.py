@@ -116,6 +116,8 @@ class PLMSService:
             "checksum": checksum
         }
 
+        logger.info(f"PAYLOAD MEMBER ACTIVATION: {payload}")
+        
         try:
             response = requests.post(f"{self.endpoint}/memberactivation", json=payload)
             response.raise_for_status()

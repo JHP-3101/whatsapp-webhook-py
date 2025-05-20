@@ -1,4 +1,5 @@
 import requests
+import re
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
 from core.logger import get_logger
 from datetime import datetime
@@ -77,36 +78,41 @@ class PLMSService:
             
         data = register_data
 
+        # Remove 62 form Phone Number into 0
         phone_number = data.get("phone_number", "")
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
-        
-        name = data.get("name", "")
-        birth_date = data.get("birth_date", "")
-        email = data.get("email", "")
-        card_number = data.get("card_number", "")
-        gender = data.get("gender", "")
-        marital = data.get("marital", "")
+            
+        # Remove All Special Characters From Address
         address = data.get("address", "")
+        address = re.sub(r"[^a-zA-Z0-9\s-]", "", address)
         
+        # Change Birth Date Format
+        birth_date = data.get("birth_date", "")
         try:
             birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
         except Exception:
             birth_date = birth_date  # fallback kalau parsing gagal
+        
+        name = data.get("name", "")
+        email = data.get("email", "")
+        card_number = data.get("card_number", "")
+        gender = data.get("gender", "")
+        marital = data.get("marital", "")
         
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
 
         payload = {
-            "name": str(name),
-            "birth_date": str(birth_date),
-            "phone_number": str(phone_number),
-            "email": str(email),
-            "card_number": str(card_number),
-            "gender": str(gender),
-            "marital": str(marital),
-            "address": str(address),      
+            "name": name,
+            "birth_date": birth_date,
+            "phone_number": phone_number,
+            "email": email,
+            "card_number": card_number,
+            "gender": gender,
+            "marital": marital,
+            "address": address,      
             "token": self.token,
             "checksum": checksum
         }

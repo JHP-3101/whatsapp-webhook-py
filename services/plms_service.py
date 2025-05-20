@@ -76,8 +76,6 @@ class PLMSService:
             self.login()
             
         data = register_data
-        
-        logger.info(f"DATA MEMBER ACTIVATION: {data}")
 
         phone_number = data.get("phone_number", "")
         if phone_number.startswith("62"):
@@ -95,23 +93,20 @@ class PLMSService:
             birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
         except Exception:
             birth_date = birth_date  # fallback kalau parsing gagal
-            
-        logger.info(f"BIRTH DATE MEMBER : {birth_date}")
         
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value
-        logger.info(f"CHECKSUM MEMBER ACTIVATION: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
 
         payload = {
-            "name": name,
-            "birth_date": birth_date,
-            "phone_number": phone_number,
-            "email": email,
-            "card_number": card_number,
-            "gender": gender,
-            "marital": marital,
-            "address": address,      
+            "name": str(name),
+            "birth_date": str(birth_date),
+            "phone_number": str(phone_number),
+            "email": str(email),
+            "card_number": str(card_number),
+            "gender": str(gender),
+            "marital": str(marital),
+            "address": str(address),      
             "token": self.token,
             "checksum": checksum
         }

@@ -74,7 +74,9 @@ class MessageHandler:
             card_number = result.get("card_number")
             
             if code == "00":
-                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi. * Nomor member: {member_id}, * Nomor kartu: {card_number}")
+                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi."
+                                                         "\n\n- Nomor member: {member_id},"
+                                                         "\n\n- Nomor kartu: {card_number}")
             elif code == "E050":
                 await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdaftar sebagai member.")
             else : 
@@ -96,7 +98,7 @@ class MessageHandler:
                 
             if code == "00":
                 # Valid member: show member services menu
-                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor member Anda: *{card_number}*.")
+                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor kartu Anda: *{card_number}*.")
                 await self.whatsapp_service.send_member_services_menu(from_number)
             elif code == "E073":
                 # Not a member: show registration option

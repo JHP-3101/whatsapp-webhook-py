@@ -96,7 +96,7 @@ class PLMSService:
         except Exception:
             birth_date = birth_date  # fallback kalau parsing gagal
             
-        logger.inf(f"BIRTH DATE MEMBER : {birth_date}")
+        logger.info(f"BIRTH DATE MEMBER : {birth_date}")
         
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value

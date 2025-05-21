@@ -137,8 +137,8 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        text = self.mode + phone_number + self.with_balance + self.token + PLMSSecretKey.SECRET_KEY.value
-        checksum = hashlib.sha256(text.encode()).hexdigest()
+        text = self.mode + phone_number + "1" + self.token + PLMSSecretKey.SECRET_KEY.value
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
             "mode": self.mode,

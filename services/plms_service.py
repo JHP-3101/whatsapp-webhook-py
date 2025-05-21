@@ -138,6 +138,7 @@ class PLMSService:
             phone_number = "0" + phone_number[2:]
             
         text = self.mode + phone_number + "1" + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Inquiry Checksum: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
@@ -158,7 +159,7 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Member activation failed: {e}")
+            logger.error(f"Failed to inquiring member: {e}")
             raise
             
         

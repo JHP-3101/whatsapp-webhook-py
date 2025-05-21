@@ -42,6 +42,7 @@ class MessageHandler:
             
         elif reply_id == Menu.MEMBER_CEK_POIN:
             phone_number = from_number
+            logger.info(f"Matched Phone Number {phone_number} = {from_number}")
             
             result = self.plms_service.inquiry(phone_number)
             card_number = result.get("card_number", "")

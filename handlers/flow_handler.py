@@ -25,7 +25,7 @@ class FlowHandler:
         # ACTIVATE MEMBER
         if flow_token == self.flow_token_activate:
             if screen == "REGISTER":
-                return await self.validate_register(version, data)
+                return await self.validate_activation(version, data)
         elif flow_token != self.flow_token_activate:
             return {
                 "version": self.version,
@@ -42,7 +42,7 @@ class FlowHandler:
             "data": {"message": "Unhandled flow"},
         }
 
-    async def validate_register(self, version: str, data: dict):
+    async def validate_activation(self, version: str, data: dict):
         
         name = data.get("name", "")
         birth_date = data.get("birth_date", "")

@@ -123,11 +123,47 @@ class PLMSService:
             response = requests.post(f"{self.endpoint}/memberactivation", json=payload)
             response.raise_for_status()
             data = response.json()
-            logger.info(f"MEMBER ACTIVATION | Response: {data}")
+            logger.info(f"MEMBER ACTIVATION RESPONSE {data}")
             return data
 
         except Exception as e:
             logger.error(f"Member activation failed: {e}")
             raise
+        
+    def inquiry(self, phone_number: str):
+        if not self.token:
+            self.login()
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        text = self.mode + phone_number + self.with_balance + self.token + PLMSSecretKey.SECRET_KEY.value
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        
+        payload = {
+            "mode": self.mode,
+            "id": phone_number,
+            "with_balance": self.with_balance,
+            "token": self.token,
+            "checksum": checksum 
+        }
+        
+        logger.info(f"PAYLOAD INQUIRY: {payload}")
+        
+        try :
+            response = requests.post(f"{self.endpoint}/inquiry", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"INQUIRY RESPONSE : {data}")
+            return data
 
+        except Exception as e:
+            logger.error(f"Member activation failed: {e}")
+            raise
+            
+        
+        
+            
+        
+            
         

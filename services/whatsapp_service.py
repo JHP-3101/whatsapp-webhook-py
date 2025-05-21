@@ -117,7 +117,7 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
     
-    async def send_registration_menu(self, to: str):
+    async def send_activation_menu(self, to: str):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
@@ -129,7 +129,7 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Registrasi Member",
                         "rows": [
-                            {"id": Menu.MEMBER_REGISTRASI, "title": "Registrasi"},
+                            {"id": Menu.MEMBER_AKTIVASI, "title": "Aktivasi"},
                             {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],

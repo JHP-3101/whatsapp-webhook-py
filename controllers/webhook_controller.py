@@ -26,7 +26,6 @@ flow_handler = FlowHandler(whatsapp_service)
 message_handler = MessageHandler(whatsapp_service, plms_service)
 contact_handler = ContactHandler(whatsapp_service)
 
-
 @router.get("/login")
 async def plms_login():
     try:

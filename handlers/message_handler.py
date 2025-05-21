@@ -37,8 +37,30 @@ class MessageHandler:
         elif reply_id == Menu.MAIN_MENU:
             await self.whatsapp_service.send_main_menu(from_number)
             
-        elif reply_id == Menu.MEMBER_REGISTRASI:
+        elif reply_id == Menu.MEMBER_AKTIVASI:
             await self.whatsapp_service.send_form_register(from_number)
+            
+        elif reply_id == Menu.MEMBER_CEK_POIN:
+            phone_number = from_number
+            
+            result = self.plms_service.inquiry(phone_number)
+            card_number = result.get("card_number", "")
+            total_points = result.get("redeemable_pool_units", 0)
+            expired_points = result.get("eeb_pool_units", [])
+            expired_points_date = result.get("eeb_date", [])
+            
+            expired_sections = ""
+            for date, point in zip(expired_points_date, expired_points):
+                expired_sections += f"Poin Expired {date} sebesar {point:,}\n"
+                
+            message = (
+                f"Poin Member Anda *{card_number}* sebesar {total_points:,}\n\n"
+                f"{expired_sections}\n"
+                "Gunakan terus kartu member Alfamidi setiap melakukan transaksi\n"
+                "Download aplikasi MIDIKRIING untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya."
+            )
+            
+            await self.whatsapp_service.send_message(from_number, message)
             
         else:
             await self.whatsapp_service.send_message(from_number, "Menu tidak dikenali.")
@@ -74,9 +96,9 @@ class MessageHandler:
             card_number = result.get("card_number")
             
             if code == "00":
-                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi."
-                                                         "\n\n- Nomor member: {member_id},"
-                                                         "\n\n- Nomor kartu: {card_number}")
+                await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi.",
+                                                         f"\n\n- Nomor member: {member_id},",
+                                                         f"\n\n- Nomor kartu: {card_number}")
             elif code == "E050":
                 await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdaftar sebagai member.")
             else : 
@@ -102,12 +124,20 @@ class MessageHandler:
                 await self.whatsapp_service.send_member_services_menu(from_number)
             elif code == "E073":
                 # Not a member: show registration option
-                await self.whatsapp_service.send_registration_menu(from_number)
+                await self.whatsapp_service.send_activation_menu(from_number)
             else:
                 await self.whatsapp_service.send_message(from_number, "Terjadi gangguan. Mohon tunggu")
                 
         except Exception as e:
             logger.error(f"Error during auto member validation: {e}", exc_info=True)
+            
+                
+                
+            
+                
+        
+            
+    
             
  
 

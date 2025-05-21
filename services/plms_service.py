@@ -138,7 +138,7 @@ class PLMSService:
             phone_number = "0" + phone_number[2:]
             
         text = self.mode + phone_number + self.with_balance + self.token + PLMSSecretKey.SECRET_KEY.value
-        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        checksum = hashlib.sha256(text.encode()).hexdigest()
         
         payload = {
             "mode": self.mode,

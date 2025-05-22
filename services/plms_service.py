@@ -169,12 +169,15 @@ class PLMSService:
         if not self.token:
             self.login()
             
+        logger.info(f"Token TNC : {self.token}")
+            
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
 
         text = self.mode + phone_number + self.action + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Info Checksum {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        logger.info(f"Checksum TNC : {checksum}")
         
         payload = {
             "mode": self.mode,

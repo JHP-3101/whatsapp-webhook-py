@@ -221,9 +221,28 @@ class WhatsAppService:
         self,
         to: str,
         body_text: str,
-        button_id: str ,
-        button_title: str
+        buttons: list[dict]
     ):
+        """
+        buttons: list of dicts in the format:
+        [
+            {"id": "button_1", "title": "🔙 Kembali"},
+            {"id": "button_2", "title": "Lanjut"},
+            ...
+        ]
+        """
+        # Build WhatsApp buttons structure
+        wa_buttons = [
+            {
+                "type": "reply",
+                "reply": {
+                    "id": button["id"],
+                    "title": button["title"]
+                }
+            }
+            for button in buttons
+        ]
+
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
@@ -234,18 +253,11 @@ class WhatsAppService:
                     "text": body_text
                 },
                 "action": {
-                    "buttons": [
-                        {
-                            "type": "reply",
-                            "reply": {
-                                "id": button_id,
-                                "title": button_title
-                            }
-                        }
-                    ]
+                    "buttons": wa_buttons
                 }
             }
         }
 
         await self._post("messages", payload)
+
     

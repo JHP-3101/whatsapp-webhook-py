@@ -1,5 +1,6 @@
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
+from handlers.message_handler import MessageHandler
 from core.logger import get_logger
 
 logger = get_logger()
@@ -8,6 +9,7 @@ class PLMSHandler:
     def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
         self.plms_service = plms_service
         self.whatsapp_service = whatsapp_service
+        self.message_handler = MessageHandler(whatsapp_service, plms_service)
         
     async def member_activation_status(self, phone_number: str, register_data: dict):
         try :
@@ -54,13 +56,13 @@ class PLMSHandler:
                 await self.whatsapp_service.send_cta_url_message(
                     phone_number, 
                     tnc_url,
-                    "Syarat dan Ketentuan",
                     "Terms & Condition",
+                    "Syarat & Ketentuan",
                     "Anda belum mensetujui syarat dan ketentuan member Alfamidi.\n\n"
                     "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
                     )  
                   
-                await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik kata "*konfirmasi*" '
+                await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik kata "*KONFIRMASI*" '
                                                          'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
                 await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"
@@ -87,12 +89,25 @@ class PLMSHandler:
                                                                     "Silahkan pilih layanan member yang tersedia.")       
                 else :
                     logger.error("Invalid Token")
+                    await self.message_handler.handle_button_reply(phone_number, "Gagal memproses.\n\nIngin kembali ke halaman utama atau mengulangi T&C?",
+                                                                    [
+                                                                        {"id": "go-back-main-menu", "title": "🔙 Kembali"},
+                                                                        {"id": "validate-tnc", "title": "💳 Cek Poin"}
+                                                                    ])
                     
             elif response_inquiry == "E110":
-                await self.whatsapp_service.send_main_menu(phone_number, "Anda belum mensetujui syarat dan ketentuan.")
+                await self.message_handler.handle_button_reply(phone_number, "Anda belum mensetujui syarat dan ketentuan.\n\nIngin kembali ke halaman utama atau mengulangi T&C?",
+                                                                [
+                                                                    {"id": "go-back-main-menu", "title": "🔙 Kembali"},
+                                                                    {"id": "go-validate-tnc", "title": "💳 Cek Poin"}
+                                                                ])
                 
             elif response_inquiry == "E073":
-                await self.whatsapp_service.send_main_menu(phone_number, "Anda telah mensetujui TNC, namun belum terdaftar sebagai member.")
+                await self.message_handler.handle_button_reply(phone_number, "Anda telah mensetujui TNC, namun belum terdaftar sebagai member.\n\nIngin kembali ke halaman utama atau mendaftar member?",
+                                                                [
+                                                                    {"id": "go-back-main-menu", "title": "🔙 Kembali"},
+                                                                    {"id": "go-member-activation", "title": "💳 Cek Poin"}
+                                                                ])
                 
             else: 
                 logger.error("Invalid Session Error")

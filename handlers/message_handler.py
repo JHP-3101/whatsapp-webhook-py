@@ -78,8 +78,25 @@ class MessageHandler:
                 logger.error("Validation Error. Activation Token Not Found")
             
         except Exception as e:
-            logger.error(f"Error in handle_nfm_reply: {str(e)}", exc_info=True)  
+            logger.error(f"Error in handle_nfm_reply: {str(e)}", exc_info=True) 
             
+    
+    async def handle_button_reply(self, phone_number: str, interactive_data: dict):
+        button_id =  interactive_data.get("id")
+        
+        if button_id == "go-back-main-menu" :
+            await self.whatsapp_service.send_main_menu("Silahkan pilih layanan yang tersedia.")
+            
+        elif button_id == "go-back-member-menu":
+            await self.whatsapp_service.send_member_services_menu("Silahkan pilih layanan member yang tersedia.")
+            
+        elif button_id == "go-validate-tnc":
+            await self.plms_handler.validate_tnc(phone_number)
+            
+        elif button_id == "go-member-activation":
+            await self.whatsapp_service.send_activation_menu(phone_number)
+        else :
+            await self.whatsapp_service.send_message(phone_number, "Menu tidak dikenali.")
             
             
                 

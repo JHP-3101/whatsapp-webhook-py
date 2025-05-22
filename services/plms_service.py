@@ -205,6 +205,10 @@ class PLMSService:
             
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
+        
+        tnc_info = self.tnc_info()
+        self.q = tnc_info.get("q")
+        logger.info(f"Session from TNC info (q): {self.q}")
 
         text = self.q + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Inquiry Checksum {text}")
@@ -226,6 +230,44 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Failed to load TNC Inquiry Member: {e}")
             raise
+        
+        
+    def tnc_commit(self, phone_number: str):
+        if not self.token:
+            self.login()
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        tnc_info = self.tnc_info()
+        self.q = tnc_info.get("q")
+        logger.info(f"Session from TNC info (q): {self.q}")
+        member_id = tnc_info.get(member_id)
+        logger.info(f"Member ID: {self.q}")
+        
+        text = self.q + member_id + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"TNC Commit Checksum {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        
+        payload = {
+            "q": self.q,
+            "member_id": member_id,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        try :
+            response = requests.post(f"{self.endpoint}/tnc/commit", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"TNC Commit Response : {data}")
+            return data                  
+                                     
+        except Exception as e:
+            logger.error(f"Failed to load TNC Inquiry Member: {e}")
+            raise
+        
+
         
     
         

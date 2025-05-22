@@ -117,14 +117,14 @@ class WhatsAppService:
 
         await self._post("messages", payload)
         
-    async def send_main_menu(self, to: str):
+    async def send_main_menu(self, to: str, message: str):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": f"Silahkan pilih layanan yang anda butuhkan."},
+                "body": {"text": message},
                 "action": {
                     "sections": [{
                         "title": "Pilih Menu",
@@ -139,14 +139,14 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
         
-    async def send_member_services_menu(self, to: str):
+    async def send_member_services_menu(self, to: str, message: str):
         payload = {
             "messaging_product": "whatsapp",
             "to": to,
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": "Silakan pilih layanan member yang tersedia:"},
+                "body": {"text": message},
                 "action": {
                     "sections": [{
                         "title": "Layanan Member",
@@ -215,5 +215,37 @@ class WhatsAppService:
                 }
             }
         }
+        await self._post("messages", payload)
+        
+    async def send_message_with_button(
+        self,
+        to: str,
+        body_text: str,
+        button_id: str ,
+        button_title: str
+    ):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "button",
+                "body": {
+                    "text": body_text
+                },
+                "action": {
+                    "buttons": [
+                        {
+                            "type": "reply",
+                            "reply": {
+                                "id": button_id,
+                                "title": button_title
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+
         await self._post("messages", payload)
     

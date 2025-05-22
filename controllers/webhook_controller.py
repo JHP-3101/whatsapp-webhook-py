@@ -87,18 +87,18 @@ async def webhook_handler(request: Request):
         # Handle messages
         if messages:
             message = messages[0]
-            from_number = message.get("from")
+            phone_number = message.get("from")
 
             if message["type"] == "text":
-                await message_handler.handle_text_message(from_number, message["text"]["body"], username)
+                await message_handler.handle_text_message(phone_number, message["text"]["body"], username)
                 
             if message["type"] == "interactive":
                 interactive_type = message["interactive"].get("type")
                 
                 if interactive_type == "list_reply":
-                    await message_handler.handle_list_reply(from_number, message["interactive"]["list_reply"])
+                    await message_handler.handle_list_reply(phone_number, message["interactive"]["list_reply"])
                 elif interactive_type == "nfm_reply":
-                    await message_handler.handle_nfm_reply(from_number, message["interactive"]["nfm_reply"])
+                    await message_handler.handle_nfm_reply(phone_number, message["interactive"]["nfm_reply"])
                 
 
         return Response(content="Event received", status_code=200)

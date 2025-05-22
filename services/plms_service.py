@@ -258,6 +258,8 @@ class PLMSService:
             "checksum": checksum
         }
         
+        logger.info(f"Commit Payload : {payload}")
+        
         try :
             response = requests.post(f"{self.endpoint}/tnc/commit", json=payload)
             response.raise_for_status()

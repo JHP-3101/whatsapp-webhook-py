@@ -14,7 +14,7 @@ class MessageHandler:
         self.flow_token_activation = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)
-        self.plms_service = plms_service
+        self.plms_handler = PLMSHandler(whatsapp_service, plms_service)
 
     async def handle_text_message(self, phone_number: str, text: str, username: str):
         if text.lower() == "konfirmasi":

@@ -212,7 +212,7 @@ class PLMSService:
 
         text = self.q + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Inquiry Checksum {text}")
-        checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
             "q": self.q,
@@ -247,7 +247,7 @@ class PLMSService:
         
         text = self.q + member_id + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Commit Checksum {text}")
-        checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
             "q": self.q,

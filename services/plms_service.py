@@ -11,8 +11,10 @@ class PLMSService:
     def __init__(self):
         self.endpoint = PLMSEndpoint.ENDPOINT.value
         self.token = None
+        self.q = None
         self.mode = "mobile"
         self.with_balance = 1
+        
         
     def login(self):
         text = PLMSUser.USERNAME.value + PLMSUser.PASSWORD.value + PLMSSecretKey.SECRET_KEY.value
@@ -155,16 +157,72 @@ class PLMSService:
             response = requests.post(f"{self.endpoint}/inquiry", json=payload)
             response.raise_for_status()
             data = response.json()
-            logger.info(f"INQUIRY RESPONSE : {data}")
+            logger.info(f"Inquiry response : {data}")
             return data
 
         except Exception as e:
             logger.error(f"Failed to inquiring member: {e}")
             raise
-            
         
-        
+    def tnc_info(self, phone_number: str):
+        self.action = "all"
+        if not self.token:
+            self.login()
             
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+
+        text = self.mode + phone_number + self.action + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"TNC Info Checksum {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest)
         
+        payload = {
+            "mode": self.mode,
+            "id": phone_number,
+            "action": self.action,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        try :
+            response = requests.post(f"{self.endpoint}/tnc/info", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"TNC Info Response : {data}")
+            return data                  
+                                     
+        except Exception as e:
+            logger.error(f"Failed to load TNC Info Member: {e}")
+            raise
+    
+    def tnc_inquiry(self, phone_number: str):
+        self.action = "all"
+        if not self.token:
+            self.login()
             
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+
+        text = self.q + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"TNC Inquiry Checksum {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        
+        payload = {
+            "q": self.q,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        try :
+            response = requests.post(f"{self.endpoint}/tnc/inquiry", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"TNC Inquiry Response : {data}")
+            return data                  
+                                     
+        except Exception as e:
+            logger.error(f"Failed to load TNC Inquiry Member: {e}")
+            raise
+        
+    
         

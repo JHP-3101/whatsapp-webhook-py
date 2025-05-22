@@ -26,7 +26,7 @@ class MessageHandler:
         
         if reply_id == Menu.MEMBER:
             contact = {"wa_id": from_number}
-            await self.validate_member(from_number, contact)
+            await self.validate_member_tnc(from_number, contact)
             
         elif reply_id == Menu.MENU_2:
             await self.whatsapp_service.send_message(from_number, "anda memilih menu 2")
@@ -93,6 +93,8 @@ class MessageHandler:
         try :
             result = self.plms_service.member_activation(phone_number, register_data)
             code = result.get("response_code")
+            tnc_flag = self.plms_service.tnc_info(phone_number)
+            tnc_url = self.plms_service.tnc_info(phone_number)
             member_id = result.get("member_id")
             card_number = result.get("card_number")
             
@@ -100,15 +102,29 @@ class MessageHandler:
                 await self.whatsapp_service.send_message(from_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi.",
                                                          f"\n\n- Nomor member: {member_id},",
                                                          f"\n\n- Nomor kartu: {card_number}")
+                if tnc_flag == "F":
+                    await self.whatsapp_service.send_cta_url_message(
+                        from_number, 
+                        tnc_url,
+                        "Terms & Condition",
+                        "Terms & Condition",
+                        "Silahakan lanjutkan persetujuan syarat dan ketentuan"
+                        "Klik tombol di bawah ini untuk mensetujui syarat dan ketentuan member."
+                        )
+                else :
+                    await self.whatsapp_service.send_main_menu(from_number)
+                
             elif code == "E050":
                 await self.whatsapp_service.send_message(from_number, f"Pendaftaran gagal.\n\nNomor anda {from_number} telah terdaftar sebagai member.")
             else : 
                 await self.whatsapp_service.send_message(from_number, "Terjadi gangguan. Mohon tunggu")
+            
+            
         
         except Exception as e:
             logger.error(f"Error during member activation: {e}", exc_info=True)
             
-    async def validate_member(self, from_number: str, contact:dict):
+    async def validate_member_tnc(self, from_number: str, contact:dict):
         phone_number = await self.contact_handler.get_phone_number(contact)
         if not phone_number or phone_number == "Unknown" :
             logger.info(f"Failed to get phone number")
@@ -116,13 +132,26 @@ class MessageHandler:
 
         try :
             result = self.plms_service.validate_member(phone_number)
+            tnc_flag = self.plms_service.tnc_info(phone_number)
+            tnc_url = self.plms_service.tnc_info(phone_number)
             code = result.get("response_code")
             card_number = result.get("card_number", "")
                 
-            if code == "00":
+            if code == "00" and tnc_flag == "F":
                 # Valid member: show member services menu
-                await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor kartu Anda: *{card_number}*.")
-                await self.whatsapp_service.send_member_services_menu(from_number)
+                await self.whatsapp_service.send_cta_url_message(
+                    from_number, 
+                    tnc_url,
+                    "Terms & Condition",
+                    "Terms & Condition",
+                    "Anda belum mensetujui syarat dan ketentuan member Alfamidi"
+                    "Klik tombol di bawah ini untuk mensetujui syarat dan ketentuan member."
+                    )
+                
+                if code == "00" and tnc_flag == "T":
+                    await self.whatsapp_service.send_message(from_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\nNomor kartu Anda: *{card_number}*.")
+                    await self.whatsapp_service.send_member_services_menu(from_number)
+                    
             elif code == "E073":
                 # Not a member: show registration option
                 await self.whatsapp_service.send_activation_menu(from_number)

@@ -70,6 +70,53 @@ class WhatsAppService:
         }
         await self._post("messages", payload)
         
+    async def send_cta_url_message(
+        self,
+        to: str,
+        button_url: str,
+        button_text: str, 
+        header_text: str = None,
+        body_text: str = None,
+        footer_text: str = None
+    ) :
+        
+        interactive_payload = {
+            "type": "cta_url",
+            "action": {
+                "name": "cta_url",
+                "parameters": {
+                    "display_text": button_text,
+                    "url": button_url
+                }
+            }
+        }
+
+        if header_text:
+            interactive_payload["header"] = {
+                "type": "text",
+                "text": header_text
+            }
+
+        if body_text:
+            interactive_payload["body"] = {
+                "text": body_text
+            }
+
+        if footer_text:
+            interactive_payload["footer"] = {
+                "text": footer_text
+            }
+
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": to,
+            "type": "interactive",
+            "interactive": interactive_payload
+        }
+
+        await self._post("messages", payload)
+        
     async def send_main_menu(self, to: str):
         payload = {
             "messaging_product": "whatsapp",

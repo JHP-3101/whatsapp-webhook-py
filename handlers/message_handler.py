@@ -128,7 +128,7 @@ class MessageHandler:
                     "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
                     )  
                   
-                await self.whatsapp_service.send_message(phone_number, "Silahkan ketik kata *_konfirmasi_*"
+                await self.whatsapp_service.send_message(phone_number, "Silahkan ketik kata _konfirmasi_ "
                                                          'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
                 await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"

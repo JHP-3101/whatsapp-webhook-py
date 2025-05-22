@@ -89,8 +89,6 @@ class MessageHandler:
             else : 
                 await self.whatsapp_service.send_message(phone_number, "Terjadi gangguan. Mohon tunggu")
             
-            
-        
         except Exception as e:
             logger.error(f"Error during member activation: {e}", exc_info=True)
             

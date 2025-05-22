@@ -132,8 +132,9 @@ class MessageHandler:
 
         try :
             result = self.plms_service.validate_member(phone_number)
-            tnc_flag = self.plms_service.tnc_info(phone_number)
-            tnc_url = self.plms_service.tnc_info(phone_number)
+            tnc = self.plms_service.tnc_info(phone_number)
+            tnc_flag = tnc.get("flag")
+            tnc_url = tnc.get("link")
             code = result.get("response_code")
             card_number = result.get("card_number", "")
                 

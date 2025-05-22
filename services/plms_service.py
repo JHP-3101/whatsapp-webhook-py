@@ -242,7 +242,9 @@ class PLMSService:
         tnc_info = self.tnc_info(phone_number)
         self.q = tnc_info.get("q")
         logger.info(f"Session from TNC info (q): {self.q}")
-        member_id = tnc_info.get(member_id)
+        
+        tnc_inquiry = self.tnc_inquiry(phone_number)
+        member_id = tnc_inquiry.get("member_id")
         logger.info(f"Member ID: {self.q}")
         
         text = self.q + member_id + self.token + PLMSSecretKey.SECRET_KEY.value

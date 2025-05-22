@@ -16,14 +16,9 @@ class MessageHandler:
         self.plms_service = plms_service
 
     async def handle_text_message(self, phone_number: str, text: str, username: str):
-        logger.info(f"Incoming text from {phone_number}: {text}")
-        await phone_number, text, username
-            
-    async def send_greetings(self, phone_number: str, username: str):
-        text_message_handler = self.handle_text_message()
-        text = text_message_handler.get("text")
-        
-        if text.lower() == text:
+        if text.lower() == "konfirmasi":
+            await self.tnc_inquiry_commit(phone_number)   
+        else:
             await self.whatsapp_service.send_greetings(phone_number, username)
 
     async def handle_list_reply(self, phone_number: str, interactive_data: dict):
@@ -101,6 +96,8 @@ class MessageHandler:
                         "Silahkan lanjutkan persetujuan syarat dan ketentuan"
                         "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
                         )
+                    await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik _*"konfirmasi"*_ dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')
+                    
                 else :
                     await self.whatsapp_service.send_member_services_menu(phone_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi.",
                                                          f"\n\n- Nomor member: {member_id},",
@@ -150,13 +147,7 @@ class MessageHandler:
                     "Terms & Condition",
                     "Anda belum mensetujui syarat dan ketentuan member Alfamidi.\n\n"
                     "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
-                    )
-                
-                text_message_handler = self.handle_text_message()
-                text = text_message_handler.get("text")
-                if text.lower() == "ya":
-                    await self.tnc_inquiry_commit()    
-                       
+                    )               
             else:
                 await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"
                                                                         f"-Nomor kartu Anda: *{card_number}*\n\n"

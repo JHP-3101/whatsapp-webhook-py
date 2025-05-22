@@ -15,7 +15,6 @@ class MessageHandler:
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)
         self.plms_service = plms_service
-        self.plms_handler = PLMSHandler(whatsapp_service, plms_service)
 
     async def handle_text_message(self, phone_number: str, text: str, username: str):
         if text.lower() == "konfirmasi":
@@ -91,7 +90,7 @@ class MessageHandler:
             await self.whatsapp_service.send_member_services_menu("Silahkan pilih layanan member yang tersedia.")
             
         elif button_id == "go-validate-tnc":
-            await self.plms_handler.validate_tnc(phone_number)
+            await self.whatsapp_service.send_activation_menu(phone_number)
             
         elif button_id == "go-member-activation":
             await self.whatsapp_service.send_activation_menu(phone_number)

@@ -245,9 +245,9 @@ class PLMSService:
         
         tnc_inquiry = self.tnc_inquiry(phone_number)
         member_id = tnc_inquiry.get("member_id")
-        logger.info(f"Member ID: {self.q}")
+        logger.info(f"Member ID: {member_id}")
         
-        text = self.q + member_id + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = self.q + str(member_id) + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Commit Checksum {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         

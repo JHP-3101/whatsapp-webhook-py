@@ -2,6 +2,7 @@ import os
 import httpx
 from core.logger import get_logger
 from fastapi import HTTPException
+from typing import List, Dict
 from dotenv import load_dotenv
 from globals.constants import Menu, WAFlow
 
@@ -221,7 +222,7 @@ class WhatsAppService:
         self,
         to: str,
         body_text: str,
-        buttons: list[dict]
+        buttons: List[Dict]
     ):
         """
         buttons: list of dicts in the format:

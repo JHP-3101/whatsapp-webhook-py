@@ -63,7 +63,7 @@ class PLMSHandler:
                 await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik kata "*KONFIRMASI*" '
                                                          'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
-                await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"
+                await self.whatsapp_service.send_member_services_menu(phone_number, f"Yeay 🎉! Selamat anda telah terdaftar ke dalam member.\n\n"
                                                                         f"-Nomor kartu Anda: *{card_number}*\n\n"
                                                                         "Silahkan pilih layanan member yang tersedia.")            
                 
@@ -82,8 +82,8 @@ class PLMSHandler:
                 response_commit = tnc_commit.get("response_code")
 
                 if response_commit == "00":
-                                    await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"
-                                                                    f"-Nomor kartu Anda: *{card_number}*\n\n"
+                                    await self.whatsapp_service.send_member_services_menu(phone_number, f"Yeay 🎉! Selamat anda telah terdaftar ke dalam member.\n\n"
+                                                                    f"- Nomor kartu Anda: *{card_number}*\n\n"
                                                                     "Silahkan pilih layanan member yang tersedia.")       
                 else :
                     logger.error("Invalid Token")

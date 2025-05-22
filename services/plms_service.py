@@ -177,7 +177,6 @@ class PLMSService:
         text = self.mode + phone_number + self.action + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Info Checksum {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest)
-        logger.info(f"Checksum TNC : {checksum}")
         
         payload = {
             "mode": self.mode,
@@ -187,6 +186,7 @@ class PLMSService:
             "checksum": checksum
         }
         
+        logger.info(f"TNC Payload : {payload}")
         try :
             response = requests.post(f"{self.endpoint}/tnc/info", json=payload)
             response.raise_for_status()

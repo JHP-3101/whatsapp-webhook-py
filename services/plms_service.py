@@ -239,7 +239,7 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        tnc_info = self.tnc_info()
+        tnc_info = self.tnc_info(phone_number)
         self.q = tnc_info.get("q")
         logger.info(f"Session from TNC info (q): {self.q}")
         member_id = tnc_info.get(member_id)

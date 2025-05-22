@@ -26,7 +26,6 @@ plms_service = PLMSService()
 flow_handler = FlowHandler(whatsapp_service)
 message_handler = MessageHandler(whatsapp_service, plms_service)
 contact_handler = ContactHandler(whatsapp_service)
-plms_handler = PLMSHandler(whatsapp_service, plms_service)
 
 @router.get("/login")
 async def plms_login():
@@ -102,7 +101,7 @@ async def webhook_handler(request: Request):
                 elif interactive_type == "nfm_reply":
                     await message_handler.handle_nfm_reply(phone_number, message["interactive"]["nfm_reply"])
                 elif interactive_type == "button_reply":
-                    await message_handler.handle_button(phone_number, message["interactive"]["button_reply"])
+                    await message_handler.handle_button_reply(phone_number, message["interactive"]["button_reply"])
                 
 
         return Response(content="Event received", status_code=200)

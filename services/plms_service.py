@@ -176,7 +176,7 @@ class PLMSService:
 
         text = self.mode + phone_number + self.action + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"TNC Info Checksum {text}")
-        checksum = str(hashlib.sha256(text.encode()).hexdigest)
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
         
         payload = {
             "mode": self.mode,

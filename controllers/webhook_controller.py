@@ -4,6 +4,7 @@ from services.plms_service import PLMSService
 from handlers.message_handler import MessageHandler
 from handlers.contact_handler import ContactHandler
 from handlers.flow_handler import FlowHandler
+from handlers.plms_handler import PLMSHandler
 from services.flow_service import FlowCryptoService
 from core.logger import get_logger
 from dotenv import load_dotenv
@@ -25,6 +26,7 @@ plms_service = PLMSService()
 flow_handler = FlowHandler(whatsapp_service)
 message_handler = MessageHandler(whatsapp_service, plms_service)
 contact_handler = ContactHandler(whatsapp_service)
+plms_handler = PLMSHandler(whatsapp_service, plms_service)
 
 @router.get("/login")
 async def plms_login():

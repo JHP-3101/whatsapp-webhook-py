@@ -2,7 +2,6 @@ import json
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
 from handlers.contact_handler import ContactHandler
-from handlers.plms_handler import PLMSHandler
 from globals.constants import Menu
 from globals.constants import WAFlow
 from core.logger import get_logger
@@ -11,6 +10,8 @@ logger = get_logger()
 
 class MessageHandler:
     def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
+        from handlers.plms_handler import PLMSHandler
+        
         self.flow_token_activation = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)

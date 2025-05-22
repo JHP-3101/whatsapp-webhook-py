@@ -81,28 +81,9 @@ class MessageHandler:
         try :
             result = self.plms_service.member_activation(phone_number, register_data)
             code = result.get("response_code")
-            tnc_flag = self.plms_service.tnc_info(phone_number)
-            tnc_url = self.plms_service.tnc_info(phone_number)
-            member_id = result.get("member_id")
-            card_number = result.get("card_number")
             
             if code == "00":
-                if tnc_flag == "F":
-                    await self.whatsapp_service.send_cta_url_message(
-                        phone_number, 
-                        tnc_url,
-                        "Terms & Condition",
-                        "Terms & Condition",
-                        "Silahkan lanjutkan persetujuan syarat dan ketentuan"
-                        "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
-                        )
-                    await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik _*"konfirmasi"*_ dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')
-                    
-                else :
-                    await self.whatsapp_service.send_member_services_menu(phone_number, f"Pendaftaran berhasil! Selamat datang sebagai member Alfamidi.",
-                                                         f"\n\n- Nomor member: {member_id},",
-                                                         f"\n\n- Nomor kartu: {card_number}")
-                
+                await self.validate_tnc(phone_number)
             elif code == "E050":
                 await self.whatsapp_service.send_message(phone_number, f"Pendaftaran gagal.\n\nNomor anda {phone_number} telah terdaftar sebagai member.")
             else : 
@@ -143,11 +124,14 @@ class MessageHandler:
                 await self.whatsapp_service.send_cta_url_message(
                     phone_number, 
                     tnc_url,
-                    "Terms & Condition",
+                    "Syarat dan Ketentuan",
                     "Terms & Condition",
                     "Anda belum mensetujui syarat dan ketentuan member Alfamidi.\n\n"
                     "_Klik tombol di bawah ini untuk ke halaman syarat dan ketentuan._"
-                    )               
+                    )  
+                  
+                await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik _*"konfirmasi"*_'
+                                                         'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
                 await self.whatsapp_service.send_member_services_menu(phone_number, f"Nomor Anda telah terdaftar ke dalam member Alfamidi.\n\n"
                                                                         f"-Nomor kartu Anda: *{card_number}*\n\n"

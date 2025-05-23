@@ -75,10 +75,10 @@ class MessageHandler:
         button_id =  interactive_data.get("id")
         
         if button_id == "go-back-main-menu" :
-            await self.whatsapp_service.send_main_menu("Silahkan pilih layanan yang tersedia.")
+            await self.whatsapp_service.send_main_menu(phone_number, "Silahkan pilih layanan yang tersedia.")
             
         elif button_id == "go-back-member-menu":
-            await self.whatsapp_service.send_member_services_menu("Silahkan pilih layanan member yang tersedia.")
+            await self.whatsapp_service.send_member_services_menu(phone_number, "Silahkan pilih layanan member yang tersedia.")
             
         elif button_id == "go-validate-tnc":
             await self.whatsapp_service.send_activation_menu(phone_number)

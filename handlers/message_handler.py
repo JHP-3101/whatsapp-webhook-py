@@ -39,7 +39,7 @@ class MessageHandler:
             await self.whatsapp_service.send_form_register(phone_number)
             
         elif reply_id == Menu.MEMBER_CEK_POIN:  
-            await self.plms_handler.cek_point_member(phone_number)
+            await self.plms_handler.check_point_member(phone_number)
             
         elif reply_id == Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN:
             await None

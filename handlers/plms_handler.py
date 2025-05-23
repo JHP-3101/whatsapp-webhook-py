@@ -113,3 +113,28 @@ class PLMSHandler:
             
         except Exception as e:   
             logger.error(f"Error during TNC Inquiry and Commit: {e}", exc_info=True)  
+    
+    
+    async def cek_point_member(self, phone_number: str):
+        try:
+            result = self.plms_service.inquiry(phone_number)
+            card_number = result.get("card_number", "")
+            total_points = result.get("redeemable_pool_units", 0)
+            expired_points = result.get("eeb_pool_units", [])
+            expired_points_date = result.get("eeb_date", [])
+            
+            expired_sections = ""
+            for date, point in zip(expired_points_date, expired_points):
+                expired_sections += f"Poin Expired {date} sebesar {point:,}\n"
+                
+            message = (
+                f"Poin Member Anda *{card_number}* sebesar {total_points:,}\n\n"
+                f"{expired_sections}\n"
+                "Gunakan terus kartu member Alfamidi setiap melakukan transaksi\n"
+                "Download aplikasi MIDIKRIING untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya."
+            )
+            
+            await self.whatsapp_service.send_message(phone_number, message)
+            
+        except Exception as e:
+            logger.error(f"Error during Cek Poin Member: {e}", exc_info=True)

@@ -1,7 +1,7 @@
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
 from core.logger import get_logger
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 logger = get_logger()
 
@@ -151,3 +151,55 @@ class PLMSHandler:
             
         except Exception as e:
             logger.error(f"Error during Cek Poin Member: {e}", exc_info=True)
+            
+
+    async def transaction_history_summary(self, phone_number: str):
+        try:
+            # Calculate date range
+            start_date = datetime.now()
+            end_date = start_date + timedelta(days=14)
+            start_date_str = start_date.strftime("%Y%m%d")
+            end_date_str = end_date.strftime("%Y%m%d")
+
+            # Call PLMS transaction history service
+            result = self.plms_service.transaction_history(
+                phone_number=phone_number,
+                startDate=start_date_str,
+                endDate=end_date_str
+            )
+
+            history = result.get("history", [])
+            if not history:
+                await self.whatsapp_service.send_message(
+                    phone_number, 
+                    "Belum ada transaksi poin dalam 2 minggu terakhir."
+                )
+                return
+
+            # Format the message
+            message = "Riwayat transaksi poin.\n\n"
+            for trx in history:
+                trx_date_raw = trx.get("transaction_date", "").split(" ")[0]
+                formatted_date = datetime.strptime(trx_date_raw, "%Y-%m-%d").strftime("%d/%m/%Y")
+                place = trx.get("transaction_place", "Toko")
+                point = trx.get("point", 0)
+                status = trx.get("status", "").lower()
+
+                if status == "award":
+                    message += f"Tgl {formatted_date} di {place} mendapatkan {point} poin\n"
+                elif status == "redeem":
+                    message += f"Tgl {formatted_date} di {place} transaksi dengan {abs(point)} poin\n"
+                else:
+                    # fallback for unknown status
+                    message += f"Tgl {formatted_date} di {place} dengan status {status} sejumlah {point} poin\n"
+
+            message += (
+                "\nGunakan terus kartu member Alfamart setiap melakukan transaksi\n"
+                "Download aplikasi ALFAGIFT untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya."
+            )
+
+            await self.whatsapp_service.send_message(phone_number, message)
+
+        except Exception as e:
+            logger.error(f"Error during transaction history summary: {e}", exc_info=True)
+           

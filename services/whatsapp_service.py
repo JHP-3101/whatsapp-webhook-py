@@ -221,7 +221,7 @@ class WhatsAppService:
     async def send_message_with_button(
         self,
         to: str,
-        body_text: str,
+        message: str,
         buttons: List[Dict]
     ):
         """
@@ -251,7 +251,7 @@ class WhatsAppService:
             "interactive": {
                 "type": "button",
                 "body": {
-                    "text": body_text
+                    "text": message
                 },
                 "action": {
                     "buttons": wa_buttons

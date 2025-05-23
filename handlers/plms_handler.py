@@ -147,7 +147,10 @@ class PLMSHandler:
                 "_Download aplikasi_ *_MIDIKRIING_* _untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya._"
             )
             
-            await self.whatsapp_service.send_message(phone_number, message)
+            await self.whatsapp_service.send_message_with_button(phone_number, message,
+                                                            [
+                                                                {"id": "go-back-main-menu", "title": "🔙 Kembali"}
+                                                            ])
             
         except Exception as e:
             logger.error(f"Error during Cek Poin Member: {e}", exc_info=True)
@@ -194,8 +197,8 @@ class PLMSHandler:
                     message += f"Tgl {formatted_date} di {place} dengan status {status} sejumlah {point} poin\n"
 
             message += (
-                "\nGunakan terus kartu member Alfamart setiap melakukan transaksi\n"
-                "Download aplikasi ALFAGIFT untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya."
+                "\nGunakan terus kartu member *Alfamidi* setiap melakukan transaksi\n"
+                "_Download aplikasi_ *_MIDIKRIING_* _untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya._"
             )
 
             await self.whatsapp_service.send_message(phone_number, message)

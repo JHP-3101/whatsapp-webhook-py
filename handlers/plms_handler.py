@@ -143,8 +143,8 @@ class PLMSHandler:
             message = (
                 f"Poin Member Anda *{card_number}* sebesar {total_points:,}\n\n"
                 f"{expired_sections}\n"
-                "Gunakan terus kartu member Alfamidi setiap melakukan transaksi\n"
-                "Download aplikasi MIDIKRIING untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya."
+                "Gunakan terus kartu member *Alfamidi* setiap melakukan transaksi\n"
+                "_Download aplikasi_ *_MIDIKRIING_* _untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya._"
             )
             
             await self.whatsapp_service.send_message(phone_number, message)

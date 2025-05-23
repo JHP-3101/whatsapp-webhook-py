@@ -1,6 +1,7 @@
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
 from core.logger import get_logger
+from datetime import datetime, time
 
 logger = get_logger()
 
@@ -63,7 +64,7 @@ class PLMSHandler:
                 await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik kata "*KONFIRMASI*" '
                                                          'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
-                await self.whatsapp_service.send_member_services_menu(phone_number, f"Anda berada di dalam layanan member 😎.\n\n"
+                await self.whatsapp_service.send_member_services_menu(phone_number, f"Anda berada di dalam layanan member.\n\n"
                                                                         f"- Nomor kartu Anda: *{card_number}*\n\n"
                                                                         "Silahkan pilih layanan member yang tersedia.")            
                 
@@ -84,7 +85,7 @@ class PLMSHandler:
                 if response_commit == "00":
                                     await self.whatsapp_service.send_member_services_menu(phone_number, f"Yeay 🎉! Selamat anda telah terdaftar ke dalam member.\n\n"
                                                                     f"- Nomor kartu Anda: *{card_number}*\n\n"
-                                                                    "Silahkan pilih layanan member yang tersedia.")       
+                                                                    "_Silahkan pilih layanan member yang tersedia._")       
                 else :
                     logger.error("Invalid Token")
                     await self.whatsapp_service.send_message_with_button(phone_number, "Gagal memproses.\n\nIngin kembali ke halaman utama atau mengulangi T&C?",
@@ -115,17 +116,29 @@ class PLMSHandler:
             logger.error(f"Error during TNC Inquiry and Commit: {e}", exc_info=True)  
     
     
-    async def cek_point_member(self, phone_number: str):
+    async def check_point_member(self, phone_number: str):
         try:
             result = self.plms_service.inquiry(phone_number)
             card_number = result.get("card_number", "")
             total_points = result.get("redeemable_pool_units", 0)
+            
             expired_points = result.get("eeb_pool_units", [])
             expired_points_date = result.get("eeb_date", [])
             
+            # Normalize to list if not already
+            if not isinstance(expired_points, list):
+                expired_points = [expired_points]
+
+            if not isinstance(expired_points_date, list):
+                expired_points_date = [expired_points_date]
+            
             expired_sections = ""
             for date, point in zip(expired_points_date, expired_points):
-                expired_sections += f"Poin Expired {date} sebesar {point:,}\n"
+                try:
+                    formatted_date = datetime.strptime(date, "%Y%m%d").strftime("%d/%m/%Y")
+                except Exception:
+                    formatted_date = date  # fallback if parsing fails
+                expired_sections += f"Poin Expired {formatted_date} sebesar {point:,}\n"
                 
             message = (
                 f"Poin Member Anda *{card_number}* sebesar {total_points:,}\n\n"

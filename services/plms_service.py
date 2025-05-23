@@ -170,7 +170,7 @@ class PLMSService:
         startDate: str,
         endDate: str,
         page: int = 1,
-        listItem: int = 10):
+        listItem: int = 20):
         
         if not self.token:
             self.login

@@ -90,22 +90,22 @@ class PLMSHandler:
                     logger.error("Invalid Token")
                     await self.whatsapp_service.send_message_with_button(phone_number, "Gagal memproses.\n\nIngin kembali ke halaman utama atau mengulangi T&C?",
                                                                     [
-                                                                        {"id": "go-back-main-menu", "title": "🔙 Kembali"},
-                                                                        {"id": "validate-tnc", "title": "💳 Cek Poin"}
+                                                                        {"id": "go-back-main-menu", "title": "Kembali"},
+                                                                        {"id": "validate-tnc", "title": "Terms & Condition"}
                                                                     ])
                     
             elif response_inquiry == "E110":
                 await self.whatsapp_service.send_message_with_button(phone_number, "Anda belum mensetujui syarat dan ketentuan.\n\nIngin kembali ke halaman utama atau mengulangi T&C?",
                                                                 [
-                                                                    {"id": "go-back-main-menu", "title": "🔙 Kembali"},
-                                                                    {"id": "go-validate-tnc", "title": "💳 Cek Poin"}
+                                                                    {"id": "go-back-main-menu", "title": "Kembali"},
+                                                                    {"id": "go-validate-tnc", "title": "Terms & Condition"}
                                                                 ])
                 
             elif response_inquiry == "E073":
                 await self.whatsapp_service.send_message_with_button(phone_number, "Anda telah mensetujui TNC, namun belum terdaftar sebagai member.\n\nIngin kembali ke halaman utama atau mendaftar member?",
                                                                 [
-                                                                    {"id": "go-back-main-menu", "title": "🔙 Kembali"},
-                                                                    {"id": "go-member-activation", "title": "💳 Cek Poin"}
+                                                                    {"id": "go-back-main-menu", "title": "Kembali"},
+                                                                    {"id": "go-member-activation", "title": "Aktivasi"}
                                                                 ])
                 
             else: 
@@ -149,7 +149,7 @@ class PLMSHandler:
             
             await self.whatsapp_service.send_message_with_button(phone_number, message,
                                                             [
-                                                                {"id": "go-back-main-menu", "title": "🔙 Kembali"}
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
                                                             ])
             
         except Exception as e:
@@ -201,7 +201,10 @@ class PLMSHandler:
                 "_Download aplikasi_ *_MIDIKRIING_* _untuk penukaran poin dan dapatkan promo2 Spesial Redeem lainnya._"
             )
 
-            await self.whatsapp_service.send_message(phone_number, message)
+            await self.whatsapp_service.send_message_with_button(phone_number, message,
+                                                            [
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
+                                                            ])
 
         except Exception as e:
             logger.error(f"Error during transaction history summary: {e}", exc_info=True)

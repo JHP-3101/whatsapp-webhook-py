@@ -130,8 +130,7 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER, "title": "Member"},
-                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
+                            {"id": Menu.MEMBER, "title": "Member"}
                         ]
                     }],
                     "button": "Pilih Menu"

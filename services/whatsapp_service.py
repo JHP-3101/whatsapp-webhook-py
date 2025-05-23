@@ -153,9 +153,7 @@ class WhatsAppService:
                         "title": "Layanan Member",
                         "rows": [
                             {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
-                            {"id": Menu.MEMBER_STATUS_KARTU, "title": "Cek Status Member"},
                             {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
-                            {"id": Menu.MEMBER_RESET_PIN, "title": "Reset PIN"},
                             {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],

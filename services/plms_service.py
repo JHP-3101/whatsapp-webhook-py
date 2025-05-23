@@ -179,7 +179,10 @@ class PLMSService:
             phone_number = "0" + phone_number[2:]
             
         text = self.mode + phone_number + startDate + endDate + str(page) + str(listItem) + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Text from transaction history: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        logger.info(f"Checksum from transaction history: {checksum}")
+        
         
         payload = {
             "mode": self.mode,

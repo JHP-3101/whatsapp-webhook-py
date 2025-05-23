@@ -63,8 +63,8 @@ class PLMSHandler:
                 await self.whatsapp_service.send_message(phone_number, 'Silahkan ketik kata "*KONFIRMASI*" '
                                                          'dan kirimkan jika anda sudah melakukan konfirmasi syarat dan ketentuan.')           
             else:
-                await self.whatsapp_service.send_member_services_menu(phone_number, f"Yeay 🎉! Selamat anda telah terdaftar ke dalam member.\n\n"
-                                                                        f"-Nomor kartu Anda: *{card_number}*\n\n"
+                await self.whatsapp_service.send_member_services_menu(phone_number, f"Anda berada di dalam layanan member 😎.\n\n"
+                                                                        f"- Nomor kartu Anda: *{card_number}*\n\n"
                                                                         "Silahkan pilih layanan member yang tersedia.")            
                 
         except Exception as e:

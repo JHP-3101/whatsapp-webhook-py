@@ -16,3 +16,13 @@ class ContactHandler:
         except Exception as e:
             logger.error(f"Error extracting profile name: {e}")
             return "Unknown"
+        
+    async def get_phone_number(self, contact: dict) -> str:
+        """Extract phone number from contact object"""
+        try:
+            phone_number = contact.get("wa_id")
+            logger.info(f"Phone Number: {phone_number}")
+            return phone_number
+        except Exception as e:
+            logger.error(f"Error extracting phone number: {e}")
+            return "Unknown"

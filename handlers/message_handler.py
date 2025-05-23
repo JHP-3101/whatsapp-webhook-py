@@ -42,7 +42,7 @@ class MessageHandler:
             await self.plms_handler.check_point_member(phone_number)
             
         elif reply_id == Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN:
-            await None
+            await self.plms_handler.transaction_history_summary(phone_number)
         
         elif reply_id == Menu.MEMBER_STATUS_KARTU:
             await None

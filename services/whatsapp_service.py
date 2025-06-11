@@ -130,8 +130,7 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER, "title": "Member"},
-                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
+                            {"id": Menu.MEMBER, "title": "Member"}
                         ]
                     }],
                     "button": "Pilih Menu"
@@ -153,9 +152,7 @@ class WhatsAppService:
                         "title": "Layanan Member",
                         "rows": [
                             {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
-                            {"id": Menu.MEMBER_STATUS_KARTU, "title": "Cek Status Member"},
                             {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
-                            {"id": Menu.MEMBER_RESET_PIN, "title": "Reset PIN"},
                             {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
@@ -221,7 +218,7 @@ class WhatsAppService:
     async def send_message_with_button(
         self,
         to: str,
-        body_text: str,
+        message: str,
         buttons: List[Dict]
     ):
         """
@@ -251,7 +248,7 @@ class WhatsAppService:
             "interactive": {
                 "type": "button",
                 "body": {
-                    "text": body_text
+                    "text": message
                 },
                 "action": {
                     "buttons": wa_buttons

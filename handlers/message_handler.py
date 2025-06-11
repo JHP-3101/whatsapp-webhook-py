@@ -31,6 +31,9 @@ class MessageHandler:
             
         elif reply_id == Menu.MENU_2:
             await self.whatsapp_service.send_message(phone_number, "anda memilih menu 2")
+        
+        elif reply_id == Menu.MAIN_MENU:
+            await self.whatsapp_service.send_main_menu(phone_number, "Anda berada di Menu Utama.\nSilahkan pilih layanan yang anda butuhkan.")
             
         elif reply_id == Menu.MEMBER_STATUS_KARTU:
             await self.whatsapp_service.send_message(phone_number, "anda memilih menu VALIDASI")
@@ -42,7 +45,7 @@ class MessageHandler:
             await self.plms_handler.check_point_member(phone_number)
             
         elif reply_id == Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN:
-            await None
+            await self.plms_handler.transaction_history_summary(phone_number)
         
         elif reply_id == Menu.MEMBER_STATUS_KARTU:
             await None
@@ -75,10 +78,10 @@ class MessageHandler:
         button_id =  interactive_data.get("id")
         
         if button_id == "go-back-main-menu" :
-            await self.whatsapp_service.send_main_menu("Silahkan pilih layanan yang tersedia.")
+            await self.whatsapp_service.send_main_menu(phone_number, "Silahkan pilih layanan yang tersedia.")
             
         elif button_id == "go-back-member-menu":
-            await self.whatsapp_service.send_member_services_menu("Silahkan pilih layanan member yang tersedia.")
+            await self.whatsapp_service.send_member_services_menu(phone_number, "Silahkan pilih layanan member yang tersedia.")
             
         elif button_id == "go-validate-tnc":
             await self.whatsapp_service.send_activation_menu(phone_number)

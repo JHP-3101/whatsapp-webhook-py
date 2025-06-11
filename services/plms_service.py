@@ -164,6 +164,52 @@ class PLMSService:
             logger.error(f"Failed to inquiring member: {e}")
             raise
         
+    def transaction_history(
+        self,
+        phone_number: str,
+        startDate: str,
+        endDate: str,
+        page: int = 1,
+        listItem: int = 20):
+        
+        if not self.token:
+            self.login
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        text = self.mode + phone_number + startDate + endDate + str(page) + str(listItem) + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Text from transaction history: {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        logger.info(f"Checksum from transaction history: {checksum}")
+        
+        
+        payload = {
+            "mode": self.mode,
+            "id": phone_number,
+            "start_date": startDate,
+            "end_date": endDate,
+            "page": page,
+            "list_item": listItem,
+            "token": self.token,
+            "checksum": checksum   
+        }
+        
+        logger.info(f"Payload Transaction History: {payload}")
+        
+        try :
+            response = requests.post(f"{self.endpoint}/transactionhistory", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Transactio History response : {data}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Failed to see transaction history member: {e}")
+            raise
+        
+            
+        
     def tnc_info(self, phone_number: str):
         self.action = "all"
         if not self.token:
@@ -270,6 +316,8 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Failed to load TNC Inquiry Member: {e}")
             raise
+        
+        
         
 
         

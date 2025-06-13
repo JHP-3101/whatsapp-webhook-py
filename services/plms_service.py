@@ -316,10 +316,3 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Failed to load TNC Inquiry Member: {e}")
             raise
-        
-        
-        
-
-        
-    
-        

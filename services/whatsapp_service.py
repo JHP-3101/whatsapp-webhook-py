@@ -56,13 +56,13 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": f"Halo {username}!. Selamat datang di layanan Member Alfamidi. Silahkan pilih layanan yang anda butuhkan."},
+                "body": {"text": f"Halo *_{username}_*! 👋🏻 🤗. Selamat datang di layanan Member *Alfamidi*. Silahkan pilih layanan yang anda butuhkan."},
                 "action": {
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER.value, "title": "Member", "description": "Akses informasi Member"},
-                            {"id": Menu.MENU_2.value, "title": "MENU ON DEV 2", "description": "Menu pengembangan"}
+                            {"id": Menu.MEMBER, "title": "Member"},
+                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"
@@ -130,7 +130,7 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER.value, "title": "Member"}
+                            {"id": Menu.MEMBER, "title": "Member"}
                         ]
                     }],
                     "button": "Pilih Menu"
@@ -151,10 +151,9 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Layanan Member",
                         "rows": [
-                            {"id": Menu.MEMBER_CEK_POIN.value, "title": "Cek Poin"},
-                            {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN.value, "title": "Riwayat Transaksi Poin"},
-                            {"id": Menu.MEMBER_RESET_PIN.value, "title": "Reset Pin"},
-                            {"id": Menu.MAIN_MENU.value, "title": "Kembali ke Menu Utama"}
+                            {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
+                            {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
+                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
                     "button": "Pilih Layanan"
@@ -175,8 +174,8 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Registrasi Member",
                         "rows": [
-                            {"id": Menu.MEMBER_AKTIVASI.value, "title": "Aktivasi"},
-                            {"id": Menu.MAIN_MENU.value, "title": "Kembali ke Menu Utama"}
+                            {"id": Menu.MEMBER_AKTIVASI, "title": "Aktivasi"},
+                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
                     "button": "Lanjutkan"
@@ -258,36 +257,3 @@ class WhatsAppService:
         }
 
         await self._post("messages", payload)
-        
-    async def send_form_reset_pin(self,to: str):
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to,
-            "type": "interactive",
-            "interactive": {
-                "type": "flow",
-                "body": {
-                    "text": "Reset Pin"
-                },
-                "action": {
-                    "name": "flow",
-                    "parameters": {
-                        "flow_message_version": self.flow_version,
-                        "mode": self.flow_mode,
-                        "flow_token": self.flow_token,
-                        "flow_id": self.flow_id,
-                        "flow_cta": "Reset",
-                        "flow_action": "navigate",
-                        "flow_action_payload": {
-                            "screen": "VALIDATION",
-                            "data": {
-                                "phone_number": to, 
-                            },
-                        }
-                    }
-                }
-            }
-        }
-        await self._post("messages", payload)
-
-    

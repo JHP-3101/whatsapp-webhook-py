@@ -51,7 +51,7 @@ class MessageHandler:
             await None
         
         elif reply_id == Menu.MEMBER_RESET_PIN:
-            await self.whatsapp_service.send_form_reset_pin(phone_number)
+            await None
         
         else:
             await self.whatsapp_service.send_message(phone_number, "Menu tidak dikenali.")
@@ -90,15 +90,3 @@ class MessageHandler:
             await self.whatsapp_service.send_activation_menu(phone_number)
         else :
             await self.whatsapp_service.send_message(phone_number, "Menu tidak dikenali.")
-            
-            
-                
-            
-                
-        
-            
-    
-            
- 
-
-    

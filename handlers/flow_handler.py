@@ -11,6 +11,7 @@ logger = get_logger()
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
         self.flow_token_activate = WAFlow.WAFLOW_TOKEN_ACTIVATE
+        self.flow_token_reset_pin = WAFlow.WAFLOW_ID_RESET_PIN
         self.whatsapp_service = whatsapp_service
         self.plms_service = plms_service
         self.version = "3"
@@ -29,6 +30,11 @@ class FlowHandler:
         if flow_token == self.flow_token_activate:
             if screen == "REGISTER":
                 return await self.validate_activation(version, data)
+        # RESET PIN 
+        elif flow_token == self.flow_token_reset_pin:
+            if screen == "VALIDATION":
+                return await self.validate_birth_date(version, data)
+                
         elif flow_token != self.flow_token_activate:
             return {
                 "version": self.version,
@@ -83,10 +89,12 @@ class FlowHandler:
         # Get From PLMS
         member_info = await self.plms_service.inquiry(phone_number)
         correct_birth_date = member_info.get("birth_date", "")
+        logger.info(f"Inquiry info : {member_info}")
         
         try: 
             parsed_birth_date = datetime.strptime(submitted_birth_date, "%Y-%m-%d").strftime("%Y-%m-%d")
             if parsed_birth_date != correct_birth_date:
+                logger.info(f"Birth Date Input: {parsed_birth_date} | Expected Birth Date: {correct_birth_date} ")
                 return {
                     "version": version,
                     "screen": "VALIDATION",
@@ -97,6 +105,7 @@ class FlowHandler:
                 }
                 
         except Exception:
+            logger.error(f"Format Tanggal Tidak Valid : {parsed_birth_date}")
             return {
                 "version": version,
                 "screen": "VALIDATION",

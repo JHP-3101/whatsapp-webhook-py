@@ -56,13 +56,13 @@ class WhatsAppService:
             "type": "interactive",
             "interactive": {
                 "type": "list",
-                "body": {"text": f"Halo {username}! 👋🏻 🤗. Selamat datang di layanan Member Alfamidi. Silahkan pilih layanan yang anda butuhkan."},
+                "body": {"text": f"Halo {username}!. Selamat datang di layanan Member Alfamidi. Silahkan pilih layanan yang anda butuhkan."},
                 "action": {
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER.value, "title": "Member"},
-                            {"id": Menu.MENU_2.value, "title": "MENU ON DEV 2"}
+                            {"id": Menu.MEMBER.value, "title": "Member", "description": "Akses informasi Member"},
+                            {"id": Menu.MENU_2.value, "title": "MENU ON DEV 2", "description": "Menu pengembangan"}
                         ]
                     }],
                     "button": "Pilih Menu"

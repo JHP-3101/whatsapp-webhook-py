@@ -178,10 +178,15 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        strPage = str(page)
-        strListItem = str(listItem)
             
-        text = self.mode + phone_number + startDate + endDate + strPage + strListItem + self.token + PLMSSecretKey.SECRET_KEY.value
+        startDateType = type(startDate)
+        endDateType = type(endDate)    
+        pageType = type(page)
+        listItemType = type(listItem)
+            
+        logger.info(f"StartDate: {startDate} & {startDateType}, EndDate: {endDate} & {endDateType}, Page: {page} & {pageType}, ListItem: {listItem} & {listItemType}")
+            
+        text = self.mode + phone_number + startDate + endDate + page + listItem + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"Text from transaction history: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"Checksum from transaction history: {checksum}")

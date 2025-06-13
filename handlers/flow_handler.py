@@ -4,7 +4,7 @@ from services.plms_service import PLMSService
 from handlers.message_handler import MessageHandler
 from globals.constants import WAFlow
 from core.logger import get_logger
-from time import datetime
+from datetime import time, datetime
 
 logger = get_logger()
 

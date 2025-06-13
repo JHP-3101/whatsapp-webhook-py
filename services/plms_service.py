@@ -169,8 +169,8 @@ class PLMSService:
         phone_number: str,
         startDate: str,
         endDate: str,
-        page: int = 1,
-        listItem: int = 20):
+        page: int,
+        listItem: int):
         
         if not self.token:
             self.login

@@ -170,7 +170,9 @@ class PLMSHandler:
             result = self.plms_service.transaction_history(
                 phone_number=phone_number,
                 startDate=start_date_str,
-                endDate=end_date_str
+                endDate=end_date_str,
+                page=1,
+                listItem=20
             )
 
             history = result.get("history", [])

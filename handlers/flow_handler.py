@@ -30,6 +30,7 @@ class FlowHandler:
         if flow_token == self.flow_token_activate:
             if screen == "REGISTER":
                 return await self.validate_activation(version, data)
+            
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
             if screen == "VALIDATION":

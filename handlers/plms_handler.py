@@ -163,6 +163,8 @@ class PLMSHandler:
             end_date = start_date + timedelta(days=14)
             start_date_str = start_date.strftime("%Y%m%d")
             end_date_str = end_date.strftime("%Y%m%d")
+            
+            logger.info(f"Start Date : {start_date_str} | End Date : {end_date_str}")
 
             # Call PLMS transaction history service
             result = self.plms_service.transaction_history(

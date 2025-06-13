@@ -168,9 +168,8 @@ class PLMSService:
         self,
         phone_number: str,
         startDate: str,
-        endDate: str,
-        page: int,
-        listItem: int):
+        endDate: str
+        ):
         
         if not self.token:
             self.login
@@ -178,17 +177,9 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        pageStr = str(page)
-        listItemStr = str(listItem)
+        logger.info(f"StartDate: {startDate}, EndDate: {endDate}")
             
-        startDateType = type(startDate)
-        endDateType = type(endDate)    
-        pageType = type(pageStr)
-        listItemType = type(listItemStr)
-            
-        logger.info(f"StartDate: {startDate} & {startDateType}, EndDate: {endDate} & {endDateType}, Page: {page} & {pageType}, ListItem: {listItem} & {listItemType}")
-            
-        text = self.mode + phone_number + startDate + endDate + pageStr + listItemStr + self.token + PLMSSecretKey.SECRET_KEY.value
+        text = self.mode + phone_number + startDate + endDate + "1" + "20" + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"Text from transaction history: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())
         logger.info(f"Checksum from transaction history: {checksum}")
@@ -199,8 +190,8 @@ class PLMSService:
             "id": phone_number,
             "start_date": startDate,
             "end_date": endDate,
-            "page": page,
-            "list_item": listItem,
+            "page": 1,
+            "list_item": 20,
             "token": self.token,
             "checksum": checksum   
         }

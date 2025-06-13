@@ -23,7 +23,7 @@ crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE_ENV)
 
 whatsapp_service = WhatsAppService()
 plms_service = PLMSService()
-flow_handler = FlowHandler(whatsapp_service)
+flow_handler = FlowHandler(whatsapp_service, plms_service)
 message_handler = MessageHandler(whatsapp_service, plms_service)
 contact_handler = ContactHandler(whatsapp_service)
 

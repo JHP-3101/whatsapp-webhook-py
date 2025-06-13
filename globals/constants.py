@@ -26,8 +26,13 @@ class PLMSEndpoint (str, Enum):
     ENDPOINT = "https://stg-partnerv2.gli.id/v2/midikring"
     
 class WAFlow (str, Enum):
+    # Flow Activate
     WAFLOW_MODE_ACTIVATE = "draft"
     WAFLOW_TOKEN_ACTIVATE = "wqcOJyw9BVAQQ5BYtmG0RBFOlzNrFbt2rEXp1m8jnWk="
     WAFLOW_ID_ACTIVATE = "645744804970894"
+    
+    # Flow Reset PIN
+    WAFLOW_ID_RESET_PIN = "1349590416116753"
+    WAFLOW_TOKEN_RESET_PIN = "7u+0EqXmWZmw8Z+S15KiyGu8dlEFpjam3cYFMYz4IpM="
     
 

@@ -153,6 +153,7 @@ class WhatsAppService:
                         "rows": [
                             {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
                             {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
+                            {"id": Menu.MEMBER_RESET_PIN, "title": "Reset Pin"},
                             {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
@@ -256,6 +257,37 @@ class WhatsAppService:
             }
         }
 
+        await self._post("messages", payload)
+        
+    async def send_form_reset_pin(self,to: str):
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to,
+            "type": "interactive",
+            "interactive": {
+                "type": "flow",
+                "body": {
+                    "text": "Reset Pin"
+                },
+                "action": {
+                    "name": "flow",
+                    "parameters": {
+                        "flow_message_version": self.flow_version,
+                        "mode": self.flow_mode,
+                        "flow_token": self.flow_token,
+                        "flow_id": self.flow_id,
+                        "flow_cta": "Reset",
+                        "flow_action": "navigate",
+                        "flow_action_payload": {
+                            "screen": "VALIDATION",
+                            "data": {
+                                "phone_number": to, 
+                            },
+                        }
+                    }
+                }
+            }
+        }
         await self._post("messages", payload)
 
     

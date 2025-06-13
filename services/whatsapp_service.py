@@ -17,10 +17,16 @@ class WhatsAppService:
         self.phone_number_id = os.getenv("PHONE_NUMBER_ID")
         self.base_url = "https://graph.facebook.com/v20.0"
         
-        self.flow_mode = WAFlow.WAFLOW_MODE_ACTIVATE
-        self.flow_id = WAFlow.WAFLOW_ID_ACTIVATE
-        self.flow_token = WAFlow.WAFLOW_TOKEN_ACTIVATE
         self.flow_version = "3"
+        
+        self.flow_mode_activate = WAFlow.WAFLOW_MODE_ACTIVATE
+        self.flow_id_activate = WAFlow.WAFLOW_ID_ACTIVATE
+        self.flow_token_activate = WAFlow.WAFLOW_TOKEN_ACTIVATE
+        
+        self.flow_mode_reset_pin = WAFlow.WAFLOW_MODE_RESET_PIN
+        self.flow_id_reset_pin = WAFlow.WAFLOW_ID_RESET_PIN
+        self.flow_token_reset_pin = WAFlow.WAFLOW_TOKEN_RESET_PIN
+        
         
     async def _post(self, endpoint: str, payload: dict) :
         url = f"{self.base_url}/{self.phone_number_id}/{endpoint}?access_token={self.token}"
@@ -199,9 +205,9 @@ class WhatsAppService:
                     "name": "flow",
                     "parameters": {
                         "flow_message_version": self.flow_version,
-                        "mode": self.flow_mode,
-                        "flow_token": self.flow_token,
-                        "flow_id": self.flow_id,
+                        "mode": self.flow_mode_activate,
+                        "flow_token": self.flow_token_activate,
+                        "flow_id": self.flow_id_activate,
                         "flow_cta": "Daftar Sekarang",
                         "flow_action": "navigate",
                         "flow_action_payload": {
@@ -273,9 +279,9 @@ class WhatsAppService:
                     "name": "flow",
                     "parameters": {
                         "flow_message_version": self.flow_version,
-                        "mode": self.flow_mode,
-                        "flow_token": self.flow_token,
-                        "flow_id": self.flow_id,
+                        "mode": self.flow_mode_reset_pin,
+                        "flow_token": self.flow_token_reset_pin,
+                        "flow_id": self.flow_id_reset_pin,
                         "flow_cta": "Reset",
                         "flow_action": "navigate",
                         "flow_action_payload": {

@@ -61,8 +61,8 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER, "title": "Member"},
-                            {"id": Menu.MENU_2, "title": "MENU ON DEV 2"}
+                            {"id": Menu.MEMBER.value, "title": "Member"},
+                            {"id": Menu.MENU_2.value, "title": "MENU ON DEV 2"}
                         ]
                     }],
                     "button": "Pilih Menu"
@@ -130,7 +130,7 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Pilih Menu",
                         "rows": [
-                            {"id": Menu.MEMBER, "title": "Member"}
+                            {"id": Menu.MEMBER.value, "title": "Member"}
                         ]
                     }],
                     "button": "Pilih Menu"
@@ -151,10 +151,10 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Layanan Member",
                         "rows": [
-                            {"id": Menu.MEMBER_CEK_POIN, "title": "Cek Poin"},
-                            {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN, "title": "Riwayat Transaksi Poin"},
-                            {"id": Menu.MEMBER_RESET_PIN, "title": "Reset Pin"},
-                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
+                            {"id": Menu.MEMBER_CEK_POIN.value, "title": "Cek Poin"},
+                            {"id": Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN.value, "title": "Riwayat Transaksi Poin"},
+                            {"id": Menu.MEMBER_RESET_PIN.value, "title": "Reset Pin"},
+                            {"id": Menu.MAIN_MENU.value, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
                     "button": "Pilih Layanan"
@@ -175,8 +175,8 @@ class WhatsAppService:
                     "sections": [{
                         "title": "Registrasi Member",
                         "rows": [
-                            {"id": Menu.MEMBER_AKTIVASI, "title": "Aktivasi"},
-                            {"id": Menu.MAIN_MENU, "title": "Kembali ke Menu Utama"}
+                            {"id": Menu.MEMBER_AKTIVASI.value, "title": "Aktivasi"},
+                            {"id": Menu.MAIN_MENU.value, "title": "Kembali ke Menu Utama"}
                         ]
                     }],
                     "button": "Lanjutkan"

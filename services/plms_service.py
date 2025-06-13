@@ -183,8 +183,8 @@ class PLMSService:
             
         startDateType = type(startDate)
         endDateType = type(endDate)    
-        pageType = type(page)
-        listItemType = type(listItem)
+        pageType = type(pageStr)
+        listItemType = type(listItemStr)
             
         logger.info(f"StartDate: {startDate} & {startDateType}, EndDate: {endDate} & {endDateType}, Page: {page} & {pageType}, ListItem: {listItem} & {listItemType}")
             

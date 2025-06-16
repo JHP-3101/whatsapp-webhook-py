@@ -69,8 +69,8 @@ class FlowHandler:
         return response
 
     async def validate_birth_date(self, version: str, data: dict):
-        phone_number = data.get("phone_number")
-        birth_date_input = data.get("birth_date")
+        phone_number = data.get("phone_number", "")
+        birth_date_input = data.get("birth_date", "")
 
         if not birth_date_input:
             return {
@@ -83,8 +83,8 @@ class FlowHandler:
             }
 
         try:
-            member = await self.plms_service.tnc_inquiry(phone_number)
-            if not member or not member.get("birth_date"):
+            member = await self.plms_service.tnc_inquiry(str(phone_number))
+            if not member or not member.get("birth_date", ""):
                 raise Exception("Data member tidak ditemukan atau tidak memiliki tanggal lahir.")
 
             # Format checking

@@ -35,9 +35,20 @@ class FlowHandler:
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
             if screen == "VALIDATION":
-                return await self.validate_birth_date(version, data)
+                phone_number = data.get("phone_number", "")
+                if not phone_number:
+                    logger.error("Missing phone_number in VALIDATION flow")
+                    return {
+                        "version": version,
+                        "screen": screen,
+                        "action": "update",
+                        "data": {
+                            "birth_date_error": "Terjadi kesalahan sistem. Nomor telepon tidak ditemukan."
+                        }
+                    }
+                return await self.validate_birth_date(version, data, phone_number)
                 
-        elif flow_token != self.flow_token_activate:
+        else:
             return {
                 "version": self.version,
                 "screen": screen or "UNKNOWN",
@@ -68,8 +79,7 @@ class FlowHandler:
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
         return response
 
-    async def validate_birth_date(self, version: str, data: dict):
-        phone_number = data.get("phone_number", "")
+    async def validate_birth_date(self, version: str, data: dict, phone_number: str):
         birth_date_input = data.get("birth_date", "")
 
         if not birth_date_input:
@@ -83,7 +93,7 @@ class FlowHandler:
             }
 
         try:
-            member = await self.plms_service.tnc_inquiry(str(phone_number))
+            member = await self.plms_service.tnc_inquiry(phone_number)
             if not member or not member.get("birth_date", ""):
                 raise Exception("Data member tidak ditemukan atau tidak memiliki tanggal lahir.")
 

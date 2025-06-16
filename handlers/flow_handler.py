@@ -48,6 +48,9 @@ class FlowHandler:
                         }
                     } 
                 return await self.validate_birth_date(version, data, phone_number)
+            
+            elif screen == "RESET_PIN":
+                return await self.validate_pin(version, data)
                 
         else:
             return {

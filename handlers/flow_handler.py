@@ -97,7 +97,7 @@ class FlowHandler:
             }
 
         try:
-            member = await self.plms_service.tnc_inquiry(phone_number)
+            member = self.plms_service.tnc_inquiry(phone_number)
             if not member or not member.get("birth_date", ""):
                 raise Exception("Data member tidak ditemukan atau tidak memiliki tanggal lahir.")
 

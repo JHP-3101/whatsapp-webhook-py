@@ -340,7 +340,6 @@ class PLMSService:
         
         try :
             response = requests.post(f"{self.endpoint}/pin/check", json=payload)
-            response.raise_for_status()
             data = response.json()
             logger.info(f"Pin Check Response: {data}")
             return data

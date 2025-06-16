@@ -15,7 +15,7 @@ class PLMSService:
         self.q = None
         self.mode = "mobile"
         self.with_balance = 1
-        self.encryptor = PinEncryptor(PLMSSecretKey.ENCRYPTION_KEY.value)
+        self.encryptor = PinEncryptor()
         
         
     def login(self):

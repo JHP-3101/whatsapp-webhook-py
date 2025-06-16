@@ -1,5 +1,6 @@
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
+from globals.constants import API
 from core.logger import get_logger
 from datetime import datetime, time, timedelta
 
@@ -9,6 +10,7 @@ class PLMSHandler:
     def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
         self.plms_service = plms_service
         self.whatsapp_service = whatsapp_service
+        self.api_redirect_midikrring = API.API_REDIRECT_MOBILE_MIDIKRIING
         
     async def member_activation_status(self, phone_number: str, register_data: dict):
         try :
@@ -210,4 +212,57 @@ class PLMSHandler:
 
         except Exception as e:
             logger.error(f"Error during transaction history summary: {e}", exc_info=True)
-           
+    
+    async def check_pin(self, phone_number: str):
+        try:
+            result = self.plms_service.inquiry(phone_number)
+            card_number = result.get("card_number", "")
+            
+            pin_check = self.plms_service.pin_check(phone_number, card_number)
+            response_code = pin_check.get("response_code")
+            logger.info(f"Response Code From Pin Check : {response_code}")
+            
+            if response_code == "00":
+                logger.info(f"{phone_number} Has Set Pin")
+                await self.whatsapp_service.send_form_reset_pin(phone_number)
+                
+            elif response_code == "E102":
+                logger.info(f"{phone_number} Never Set Pin")
+                await self.whatsapp_service.send_cta_url_message(
+                    phone_number,
+                    self.api_redirect_midikrring,
+                    "Pin Service",
+                    "Layanan Pin",
+                    "Anda belum mengatur Pin Member.\n\n"
+                    "_Klik tombol di bawah ini untuk mengatur Pin Member melalui aplikasi MidiKriing._"
+                    )
+                
+            else: 
+                logger.error(f"{response_code} | Invalid Session Error")
+            
+        except Exception as e:
+            logger.error(f"Error during Pin Checker: {e}", exc_info=True)
+            
+    async def resets_pin(self, phone_number: str, pin: str):
+        try: 
+            result = self.plms_service.pin_reset(phone_number, pin)
+            response_code = result.get("response_code")
+            logger.info(f"Response Code From Pin Reset: {response_code}")
+            
+            if response_code == "00":
+                logger.info(f"{phone_number} has reset pin ")
+                await self.whatsapp_service.send_message_with_button(phone_number, "Anda telah berhasil melakukan Reset Pin\n\nSilahkan pilih layanan member lainnya.",
+                                                            [
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
+                                                            ])
+                
+            else :
+                logger.error(f"{response_code} | Gagal melakukan proses reset pin")
+                
+            
+        except Exception as e:
+            logger.error(f"Error during Pin Resets: {e}", exc_info=True)
+        
+        
+            
+            

@@ -36,4 +36,7 @@ class WAFlow (str, Enum):
     WAFLOW_ID_RESET_PIN = "1349590416116753"
     WAFLOW_TOKEN_RESET_PIN = "7u+0EqXmWZmw8Z+S15KiyGu8dlEFpjam3cYFMYz4IpM="
     
+class API (str, Enum):
+    API_REDIRECT_MOBILE_MIDIKRIING = "https://api-url-store-mobile-repo-198591357364.asia-southeast2.run.app"
+    
 

@@ -1,6 +1,7 @@
 import requests
 import re
 from globals.constants import PLMSUser, PLMSSecretKey, PLMSEndpoint
+from core.encoder import PinEncryptor
 from core.logger import get_logger
 from datetime import datetime
 import hashlib
@@ -14,6 +15,7 @@ class PLMSService:
         self.q = None
         self.mode = "mobile"
         self.with_balance = 1
+        self.encryptor = PinEncryptor(PLMSSecretKey.ENCRYPTION_KEY.value)
         
         
     def login(self):
@@ -80,8 +82,6 @@ class PLMSService:
             
         data = register_data
 
-        # Remove 62 form Phone Number into 0
-        phone_number = data.get("phone_number", "")
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
@@ -172,7 +172,7 @@ class PLMSService:
         ):
         
         if not self.token:
-            self.login
+            self.login()
             
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
@@ -316,4 +316,74 @@ class PLMSService:
                                      
         except Exception as e:
             logger.error(f"Failed to load TNC Inquiry Member: {e}")
+            raise
+        
+    def pin_check(self, phone_number: str, card_number: str):
+        if not self.token:
+            self.login()
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        
+        text = card_number + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Text from Pin Check: {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        logger.info(f"Checksum from Pin Check: {checksum}")
+        
+        payload = {
+            "card_number": card_number,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        try :
+            response = requests.post(f"{self.endpoint}/pin/check", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Pin Check Response: {data}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Failed to do pin check: {e}")
+            raise
+        
+        
+    def pin_reset(self, phone_number: str, pin: str):
+        if not self.token:
+            self.login()
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        inquiry = self.inquiry(phone_number)
+        card_number = inquiry.get("card_number")
+        
+        # Encrypt PIN
+        encrypted_pin = self.encryptor.encrypt_pin(pin)
+        logger.info(f"Encrypted PIN: {encrypted_pin}")
+            
+        text = card_number + encrypted_pin + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Text from Pin Reset: {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        logger.info(f"Checksum from Pin Reset: {checksum}")
+        
+        payload = {
+            "card_number": card_number,
+            "pin": encrypted_pin,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        logger.info(f"Payload Pin Reset: {payload}")
+        
+        try :
+            response = requests.post(f"{self.endpoint}/pin/reset", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Pin Reset Response: {data}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Failed to do pin reset: {e}")
             raise

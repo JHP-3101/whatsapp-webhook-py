@@ -2,27 +2,17 @@ import base64
 import os
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from globals.constants import ChecksumPin
-from core.logger import get_logger
 
-logger = get_logger()
-
-class EncryptionService:
-    def __init__(self):
-        self.key = ChecksumPin.PIN.value.encode("utf-8")  # Convert to bytes
+class PinEncryptor:
+    def __init__(self, key: str):
+        self.key = key.encode()  # convert to bytes
         if len(self.key) != 32:
-            logger.error("Encryption key must be 32 bytes for AES-256")
-            raise ValueError("Invalid encryption key length")
+            raise ValueError("Key must be 32 bytes long for AES-256.")
 
-    def encrypt_pin(self, text: str) -> str:
-        try:
-            iv = os.urandom(16)
-            cipher = AES.new(self.key, AES.MODE_CBC, iv)
-            padded_text = pad(text.encode(), AES.block_size)
-            ciphertext = cipher.encrypt(padded_text)
-            iv_ciphertext = iv + ciphertext
-            logger.info(f"base64.b64encode(iv_ciphertext).decode()")
-            return base64.b64encode(iv_ciphertext).decode()
-        except Exception as e:
-            logger.error(f"Encryption error: {e}")
-            raise
+    def encrypt_pin(self, plain_text: str) -> str:
+        iv = os.urandom(16)  # Generate 16-byte IV
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        padded_text = pad(plain_text.encode(), AES.block_size)  # pad to 16 bytes
+        cipher_text = cipher.encrypt(padded_text)
+        result = base64.b64encode(iv + cipher_text).decode()  # IV + ciphertext, base64
+        return result

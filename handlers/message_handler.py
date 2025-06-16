@@ -46,12 +46,12 @@ class MessageHandler:
             
         elif reply_id == Menu.MEMBER_RIWAYAT_TRANSAKSI_POIN:
             await self.plms_handler.transaction_history_summary(phone_number)
+                
+        elif reply_id == Menu.MEMBER_RESET_PIN:
+            await self.plms_handler.check_pin(phone_number)
         
         elif reply_id == Menu.MEMBER_STATUS_KARTU:
             await None
-        
-        elif reply_id == Menu.MEMBER_RESET_PIN:
-            await self.whatsapp_service.send_form_reset_pin(phone_number)
         
         else:
             await self.whatsapp_service.send_message(phone_number, "Menu tidak dikenali.")

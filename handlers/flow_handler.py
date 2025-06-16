@@ -128,7 +128,7 @@ class FlowHandler:
                     "screen": "VALIDATION",
                     "action": "update",
                     "data": {
-                        "birth_date_error": "Tanggal lahir tidak sesuai dengan data kami"
+                        "birth_date_error": "⚠️ Tanggal lahir tidak sesuai dengan data kami"
                     }
                 }
                 

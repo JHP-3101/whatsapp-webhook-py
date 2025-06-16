@@ -323,7 +323,6 @@ class PLMSService:
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
-        
         text = card_number + self.token + PLMSSecretKey.SECRET_KEY.value
         logger.info(f"Text from Pin Check: {text}")
         checksum = str(hashlib.sha256(text.encode()).hexdigest())

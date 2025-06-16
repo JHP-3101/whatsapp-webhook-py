@@ -217,6 +217,7 @@ class PLMSHandler:
         try:
             result = self.plms_service.inquiry(phone_number)
             card_number = result.get("card_number", "")
+            logger.info(f"Card Number From Inquiry: {card_number}")
             
             pin_check = self.plms_service.pin_check(phone_number, card_number)
             response_code = pin_check.get("response_code")

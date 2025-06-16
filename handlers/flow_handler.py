@@ -1,17 +1,16 @@
 from core.logger import get_logger
 from services.whatsapp_service import WhatsAppService
 from services.plms_service import PLMSService
-from handlers.message_handler import MessageHandler
 from globals.constants import WAFlow
 from core.logger import get_logger
-from datetime import datetime, time
+from datetime import datetime
 
 logger = get_logger()
 
 class FlowHandler:
     def __init__(self, whatsapp_service: WhatsAppService, plms_service: PLMSService):
         self.flow_token_activate = WAFlow.WAFLOW_TOKEN_ACTIVATE
-        self.flow_token_reset_pin = WAFlow.WAFLOW_ID_RESET_PIN
+        self.flow_token_reset_pin = WAFlow.WAFLOW_TOKEN_RESET_PIN
         self.whatsapp_service = whatsapp_service
         self.plms_service = plms_service
         self.version = "3"
@@ -25,6 +24,8 @@ class FlowHandler:
                 "action": "ping",
                 "data": {"status": "active"},
             }
+            
+        logger.info(f"Flow Handler | Token Incoming : {flow_token}")
             
         # ACTIVATE MEMBER
         if flow_token == self.flow_token_activate:
@@ -53,84 +54,95 @@ class FlowHandler:
         }
 
     async def validate_activation(self, version: str, data: dict):
-        
-        name = data.get("name", "")
-        birth_date = data.get("birth_date", "")
-        phone_number = data.get("phone_number", "")
-        card_number = data.get("card_number", "")
-        email = data.get("email", "")
-        gender = data.get("gender", "")
-        marital = data.get("marital", "")
-        address = data.get("address", "")
-            
         response = {
-                "version": version,
-                "screen": "CONFIRM",
-                "action": "update",
-                "data": {
-                    "phone_number": phone_number,
-                    "card_number": card_number,
-                    "name": name,
-                    "birth_date": birth_date,
-                    "email": email,
-                    "gender": gender,
-                    "marital": marital,
-                    "address": address
-                }
+            "version": version,
+            "screen": "CONFIRM",
+            "action": "update",
+            "data": {
+                key: data.get(key, "") for key in [
+                    "phone_number", "card_number", "name", "birth_date",
+                    "email", "gender", "marital", "address"
+                ]
             }
-        
+        }
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
         return response
-    
 
     async def validate_birth_date(self, version: str, data: dict):
-        phone_number = data.get("phone_number", "")
-        submitted_birth_date = data.get("birth_date", "")
-        
-        # Get From PLMS
-        member_info = await self.plms_service.inquiry(phone_number)
-        correct_birth_date = member_info.get("birth_date", "")
-        logger.info(f"Inquiry info : {member_info}")
-        
-        try: 
-            parsed_birth_date = datetime.strptime(submitted_birth_date, "%Y-%m-%d").strftime("%Y-%m-%d")
-            if parsed_birth_date != correct_birth_date:
-                logger.info(f"Birth Date Input: {parsed_birth_date} | Expected Birth Date: {correct_birth_date} ")
-                return {
-                    "version": version,
-                    "screen": "VALIDATION",
-                    "action": "update",
-                    "data": {
-                        "birth_date_error": "Tanggal lahir tidak sesuai dengan data kami."
-                    }
-                }
-                
-        except Exception:
-            logger.error(f"Format Tanggal Tidak Valid : {parsed_birth_date}")
+        phone = data.get("phone_number")
+        birth_date_input = data.get("birth_date")
+
+        if not birth_date_input:
             return {
                 "version": version,
                 "screen": "VALIDATION",
                 "action": "update",
                 "data": {
-                    "birth_date_error": "Format tanggal tidak valid."
+                    "birth_date_error": "Tanggal lahir wajib diisi"
                 }
             }
-            
-        # Pass validation → move to RESET_PIN screen
-        return {
-            "version": version,
-            "screen": "RESET_PIN",
-            "action": "update",
-            "data": {
-                "phone_number": phone_number
+
+        try:
+            member = await self.plms_service.get_member_by_phone(phone)
+            if not member or not member.get("birth_date"):
+                raise Exception("Data member tidak ditemukan atau tidak memiliki tanggal lahir.")
+
+            # Format checking
+            try:
+                input_dt = datetime.strptime(birth_date_input, "%Y-%m-%d").date()
+                member_dt = datetime.strptime(member["birth_date"], "%Y-%m-%d").date()
+            except Exception as e:
+                return {
+                    "version": version,
+                    "screen": "VALIDATION",
+                    "action": "update",
+                    "data": {
+                        "birth_date_error": "Format tanggal tidak valid"
+                    }
+                }
+
+            if input_dt == member_dt:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {}
+                }
+            else:
+                return {
+                    "version": version,
+                    "screen": "VALIDATION",
+                    "action": "update",
+                    "data": {
+                        "birth_date_error": "Tanggal lahir tidak sesuai dengan data kami"
+                    }
+                }
+                
+        except Exception as e:
+            logger.error(f"Birth date validation error: {str(e)}")
+            return {
+                "version": version,
+                "screen": "VALIDATION",
+                "action": "update",
+                "data": {
+                    "birth_date_error": "Terjadi kesalahan saat validasi. Silakan coba lagi."
+                }
             }
-        }
         
     
     async def validate_pin(self, version: str, data: dict):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
-        phone_number = data.get("phone_number", "")
+
+        if not pin or not confirm_pin:
+            return {
+                "version": version,
+                "screen": "RESET_PIN",
+                "action": "update",
+                "data": {
+                    "pin_error": "PIN dan konfirmasi wajib diisi"
+                }
+            }
 
         if pin != confirm_pin:
             return {
@@ -138,16 +150,15 @@ class FlowHandler:
                 "screen": "RESET_PIN",
                 "action": "update",
                 "data": {
-                    "pin_error": "PIN dan konfirmasi PIN tidak sama."
+                    "pin_error": "PIN dan konfirmasi PIN tidak sama"
                 }
             }
 
-        # Final success response
         return {
             "version": version,
             "screen": "RESET_PIN",
             "action": "complete",
             "data": {
-                "message": f"PIN berhasil direset untuk nomor {phone_number}."
+                "pin": pin
             }
-        }  
+        }

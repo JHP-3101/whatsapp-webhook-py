@@ -15,7 +15,7 @@ class PLMSService:
         self.q = None
         self.mode = "mobile"
         self.with_balance = 1
-        self.encryptor = PinEncryptor(PLMSSecretKey.SECRET_KEY.value)
+        self.encryptor = PinEncryptor()
         
         
     def login(self):
@@ -208,8 +208,6 @@ class PLMSService:
         except Exception as e:
             logger.error(f"Failed to see transaction history member: {e}")
             raise
-        
-            
         
     def tnc_info(self, phone_number: str):
         self.action = "all"

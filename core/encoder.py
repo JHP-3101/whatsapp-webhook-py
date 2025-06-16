@@ -4,15 +4,13 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
 class PinEncryptor:
-    def __init__(self, key: str):
-        self.key = key.encode()  # convert to bytes
-        if len(self.key) != 32:
-            raise ValueError("Key must be 32 bytes long for AES-256.")
+    def encrypt_pin(self, pin: str) -> str:
+        key = pin.encode()  # 🔑 using the PIN as key
+        if len(key) != 32:
+            raise ValueError("Encryption key (PIN) must be 32 bytes long for AES-256.")
 
-    def encrypt_pin(self, plain_text: str) -> str:
-        iv = os.urandom(16)  # Generate 16-byte IV
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        padded_text = pad(plain_text.encode(), AES.block_size)  # pad to 16 bytes
+        iv = os.urandom(16)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        padded_text = pad(pin.encode(), AES.block_size)  # also encrypting the PIN itself
         cipher_text = cipher.encrypt(padded_text)
-        result = base64.b64encode(iv + cipher_text).decode()  # IV + ciphertext, base64
-        return result
+        return base64.b64encode(iv + cipher_text).decode()

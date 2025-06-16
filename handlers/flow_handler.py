@@ -37,6 +37,7 @@ class FlowHandler:
             if screen == "VALIDATION":
                 phone_raw = data.get("phone_number")
                 phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                logger.info(f"Incoming Phone Number Reset Pin : {phone_number}")
                 if not phone_number:
                     logger.error("Missing or malformed phone_number in VALIDATION flow")
                     return {
@@ -82,6 +83,8 @@ class FlowHandler:
 
     async def validate_birth_date(self, version: str, data: dict, phone_number: str):
         birth_date_input = data.get("birth_date", "")
+        
+        logger.info(f"Reset PIN | Birth Date Input : {birth_date_input}")
 
         if not birth_date_input:
             return {

@@ -321,6 +321,8 @@ class PLMSService:
             self.login()
             
         logger.info(f"Token : {self.token}")
+        
+        logger.info(f"Received Card Number {card_number}")
             
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]

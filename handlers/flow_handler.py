@@ -34,12 +34,11 @@ class FlowHandler:
             
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
-            phone_raw = data.get("phone_number")
-            phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-            if not phone_number:
-                logger.error("Missing or malformed phone_number in VALIDATION flow")
-                    
             if screen == "VALIDATION":
+                phone_raw = data.get("phone_number")
+                phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                if not phone_number:
+                    logger.error("Missing or malformed phone_number in VALIDATION flow")
                 return await self.validate_birth_date(version, data, phone_number)
             
             elif screen == "RESET_PIN":

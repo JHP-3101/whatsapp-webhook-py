@@ -101,8 +101,8 @@ class FlowHandler:
 
             # Format checking
             try:
-                input_dt = datetime.strptime(birth_date_input, "%Y-%m-%d").date()
-                member_dt = datetime.strptime(member["birth_date"], "%Y-%m-%d").date()
+                input_dt = datetime.strptime(birth_date_input, "%Y-%m-%d").strftime("%Y%m%d")
+                member_dt = member.get("birth_date", "")
             except Exception as e:
                 return {
                     "version": version,

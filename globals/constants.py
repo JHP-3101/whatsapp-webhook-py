@@ -12,7 +12,7 @@ class Menu (str, Enum):
     MEMBER_RIWAYAT_TRANSAKSI_POIN = "riwayat-transaksi-poin-member"
     MEMBER_RESET_PIN = "reset-pin-member"
     
-class ChecksumPin (str, Enum):
+class SaltPin (str, Enum):
     PIN = "SaltNyaSaltNyaSaltNyaSaltNyaSalt"
     
 class PLMSSecretKey (str, Enum):

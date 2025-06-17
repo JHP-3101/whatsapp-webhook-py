@@ -73,7 +73,7 @@ class PLMSService:
             return data
         
         except Exception as e:
-            logger.error(f"Validate member failed: {e}")
+            logger.error(f"User: {phone_number}, Validate member failed: {e}")
             raise
         
     def member_activation(self, phone_number: str, register_data: dict):
@@ -129,7 +129,7 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Member activation failed: {e}")
+            logger.error(f"User: {phone_number}, Member activation failed: {e}")
             raise
         
     def inquiry(self, phone_number: str):
@@ -161,7 +161,7 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Failed to inquiring member: {e}")
+            logger.error(f"User: {phone_number}, Failed to inquiring member: {e}")
             raise
         
     def transaction_history(
@@ -206,7 +206,7 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Failed to see transaction history member: {e}")
+            logger.error(f"User: {phone_number}, Failed to see transaction history member: {e}")
             raise
         
     def tnc_info(self, phone_number: str):
@@ -240,7 +240,7 @@ class PLMSService:
             return data                  
                                      
         except Exception as e:
-            logger.error(f"Failed to load TNC Info Member: {e}")
+            logger.error(f"User: {phone_number}, Failed to load TNC Info Member: {e}")
             raise
     
     def tnc_inquiry(self, phone_number: str):
@@ -273,7 +273,7 @@ class PLMSService:
             return data                  
                                      
         except Exception as e:
-            logger.error(f"Failed to load TNC Inquiry Member: {e}")
+            logger.error(f"User: {phone_number}, Failed to load TNC Inquiry Member: {e}")
             raise
         
         
@@ -313,7 +313,7 @@ class PLMSService:
             return data                  
                                      
         except Exception as e:
-            logger.error(f"Failed to load TNC Inquiry Member: {e}")
+            logger.error(f"User: {phone_number}, Failed to load TNC Inquiry Member: {e}")
             raise
         
     def pin_check(self, phone_number: str, card_number: str):
@@ -345,7 +345,7 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Failed to do pin check: {e}")
+            logger.error(f"User: {phone_number}, Failed to do pin check: {e}")
             raise
         
         
@@ -385,5 +385,44 @@ class PLMSService:
             return data
 
         except Exception as e:
-            logger.error(f"Failed to do pin reset: {e}")
+            logger.error(f"User: {phone_number}, Failed to do pin reset: {e}")
+            raise
+        
+    def pin_create(self, phone_number: str, pin: str):
+        if not self.token:
+            self.login
+            
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
+            
+        inquiry = self.inquiry(phone_number)
+        card_number = inquiry.get("card_number")
+        
+        # Encrypt PIN
+        encrypted_pin = self.encryptor.encrypt_pin(pin)
+        logger.info(f"Encrypted PIN: {encrypted_pin}")
+        
+        text = card_number + encrypted_pin + self.token + PLMSSecretKey.SECRET_KEY.value
+        logger.info(f"Text from Pin Create: {text}")
+        checksum = str(hashlib.sha256(text.encode()).hexdigest())
+        logger.info(f"Checksum from Pin Create: {checksum}")
+        
+        payload = {
+            "card_number": card_number,
+            "pin": encrypted_pin,
+            "token": self.token,
+            "checksum": checksum
+        }
+        
+        logger.info(f"Payload Pin Create: {payload}")
+        
+        try: 
+            response = requests.post(f"{self.endpoint}/pin/create", json=payload)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Pin Reset Response: {data}")
+            return data
+        
+        except Exception as e:
+            logger.error(f"User: {phone_number}, Failed to Create A Pin From Phone Number: {e}")
             raise

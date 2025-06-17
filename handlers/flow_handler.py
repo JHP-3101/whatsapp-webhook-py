@@ -34,23 +34,16 @@ class FlowHandler:
             
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
+            phone_raw = data.get("phone_number")
+            phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+            if not phone_number:
+                logger.error("Missing or malformed phone_number in VALIDATION flow")
+                    
             if screen == "VALIDATION":
-                phone_raw = data.get("phone_number")
-                phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-                if not phone_number:
-                    logger.error("Missing or malformed phone_number in VALIDATION flow")
-                    return {
-                        "version": version,
-                        "screen": screen,
-                        "action": "update",
-                        "data": {
-                            "birth_date_error": "Terjadi kesalahan sistem. Nomor telepon tidak ditemukan."
-                        }
-                    } 
                 return await self.validate_birth_date(version, data, phone_number)
             
             elif screen == "RESET_PIN":
-                return await self.validate_pin(version, data)
+                return await self.validate_pin(version, data, phone_number)
                 
         else:
             return {
@@ -85,6 +78,9 @@ class FlowHandler:
 
     async def validate_birth_date(self, version: str, data: dict, phone_number: str):
         birth_date_input = data.get("birth_date", "")
+        
+        if phone_number.startswith("62"):
+            phone_number = "0" + phone_number[2:]
         
         logger.info(f"Reset PIN | Birth Date Input : {birth_date_input}")
 
@@ -146,11 +142,41 @@ class FlowHandler:
             }
         
     
-    async def validate_pin(self, version: str, data: dict):
+    async def validate_pin(self, version: str, data: dict, phone_number: str):
+        # Flow Response
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
         birth_date_input = data.get("birth_date", "")  # Optional: passed from previous screen
-
+        
+        # PLMS Result
+        result = self.plms_service.pin_reset(phone_number, pin)
+        response_code = result.get("response_code", "")
+        
+        
+        # Rule 1 : Cannot be the same as the old PIN
+        if response_code == "E104":
+            return {
+                "version": version,
+                "screen": "RESET_PIN",
+                "action": "update",
+                "data": {
+                    "pin_error": "⚠️ PIN tidak boleh sama seperti PIN sebelumnya."
+                }
+            }
+            
+            
+        # Rule 2 : Cannot be ordered number and also birth date combination
+        if response_code == "E105":
+            return {
+                "version": version,
+                "screen": "RESET_PIN",
+                "action": "update",
+                "data": {
+                    "pin_error": "⚠️ PIN tidak boleh angka berurutan, atau kombinasi tanggal lahir."
+                }
+            } 
+            
+        # Rule 3 : PIN and PIN Confirmation Is Blank
         if not pin or not confirm_pin:
             return {
                 "version": version,
@@ -161,6 +187,7 @@ class FlowHandler:
                 }
             }
 
+        # Rule 4 : PIN and PIN Confirmation Is Not The Same
         if pin != confirm_pin:
             return {
                 "version": version,
@@ -171,7 +198,7 @@ class FlowHandler:
                 }
             }
 
-        # Rule 1: Cannot be same repeated digit
+        # Rule 5 : Cannot be same repeated digit
         if len(set(pin)) == 1:
             return {
                 "version": version,
@@ -181,35 +208,6 @@ class FlowHandler:
                     "pin_error": "⚠️ PIN tidak boleh berupa pengulangan angka"
                 }
             }
-
-        # Rule 2: Cannot be sequential
-        if pin in ["123456", "234567", "345678", "456789", "012345", "654321", "543210", "432109"]:
-            return {
-                "version": version,
-                "screen": "RESET_PIN",
-                "action": "update",
-                "data": {
-                    "pin_error": "⚠️ PIN tidak boleh berupa angka berurutan"
-                }
-            }
-
-        # Rule 3: Cannot match birth date (ddmmyy / yymmdd)
-        if birth_date_input:
-            try:
-                birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
-                ddmmyy = birth_dt.strftime("%d%m%y")
-                yymmdd = birth_dt.strftime("%y%m%d")
-                if pin == ddmmyy or pin == yymmdd:
-                    return {
-                        "version": version,
-                        "screen": "RESET_PIN",
-                        "action": "update",
-                        "data": {
-                            "pin_error": "⚠️ PIN tidak boleh sama dengan tanggal lahir Anda"
-                        }
-                    }
-            except Exception as e:
-                logger.warning(f"Skipping birth date PIN check due to parsing error: {e}")
 
         return {
             "version": version,

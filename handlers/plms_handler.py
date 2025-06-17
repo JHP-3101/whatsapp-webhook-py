@@ -232,11 +232,18 @@ class PLMSHandler:
                 await self.whatsapp_service.send_cta_url_message(
                     phone_number,
                     self.api_redirect_midikrring,
-                    "Pin Service",
-                    "Layanan Pin",
-                    "Anda belum mengatur Pin Member.\n\n"
+                    "Buat Pin Sekarang!",
+                    "Buat Pin Member",
+                    "Anda belum membuat Pin Member. Ayo amankan akunmu dengan Pin sekarang!\n\n"
                     "_Klik tombol di bawah ini untuk mengatur Pin Member melalui aplikasi MidiKriing._"
                     )
+                
+                await self.whatsapp_service.send_message_with_button(
+                        phone_number, 
+                        "Kembali ke menu member.", 
+                        [
+                            {"id": "go-back-member-menu", "title": "Kembali"}
+                        ])
                 
             else: 
                 logger.error(f"{response_code} | Invalid Session Error")
@@ -257,13 +264,10 @@ class PLMSHandler:
                                                                 {"id": "go-back-member-menu", "title": "Kembali"}
                                                             ])
                 
-            else :
+            else:
                 logger.error(f"{response_code} | Gagal melakukan proses reset pin")
                 
             
         except Exception as e:
             logger.error(f"Error during Pin Resets: {e}", exc_info=True)
-        
-        
-            
             

@@ -88,5 +88,6 @@ class MessageHandler:
             
         elif button_id == "go-member-activation":
             await self.whatsapp_service.send_activation_menu(phone_number)
+        
         else :
             await self.whatsapp_service.send_message(phone_number, "Menu tidak dikenali.")

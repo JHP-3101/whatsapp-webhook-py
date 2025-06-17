@@ -90,8 +90,7 @@ class FlowHandler:
                 "screen": "VALIDATION",
                 "action": "update",
                 "data": {
-                    "birth_date_error": "Tanggal lahir wajib diisi",
-                    "phone_number": phone_number
+                    "birth_date_error": "Tanggal lahir wajib diisi"
                 }
             }
 
@@ -111,7 +110,6 @@ class FlowHandler:
                     "action": "update",
                     "data": {
                         "birth_date_error": "Format tanggal tidak valid", 
-                        "phone_number": phone_number
                     }
                 }
 
@@ -120,7 +118,7 @@ class FlowHandler:
                     "version": version,
                     "screen": "RESET_PIN",
                     "action": "update",
-                    "data": {"phone_number": phone_number}
+                    "data": {}
                 }
             else:
                 return {
@@ -128,8 +126,7 @@ class FlowHandler:
                     "screen": "VALIDATION",
                     "action": "update",
                     "data": {
-                        "birth_date_error": "⚠️ Tanggal lahir tidak sesuai dengan data yang terdaftar dengan member Alfamidi!",
-                        "phone_number": phone_number
+                        "birth_date_error": "⚠️ Tanggal lahir tidak sesuai dengan data yang terdaftar dengan member Alfamidi!"
                     }
                 }
                 

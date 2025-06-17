@@ -41,17 +41,17 @@ class FlowHandler:
                 logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
                 if not phone_number:
                     logger.error("Missing or malformed phone_number in VALIDATION flow")
-                    return {
-                        "version": version,
-                        "screen": screen,
-                        "action": "update",
-                        "data": {
-                            "birth_date_error": "Terjadi kesalahan sistem. Nomor telepon tidak ditemukan."
-                        }
-                    } 
+                    
                 return await self.validate_birth_date(version, data, phone_number)
             
             elif screen == "RESET_PIN":
+                phone_raw = data.get("phone_number")
+                logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
+                phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
+                if not phone_number:
+                    logger.error("Missing or malformed phone_number in RESET_PIN flow")
+                    
                 return await self.validate_pin(version, data, phone_number)
                 
         else:

@@ -36,8 +36,9 @@ class FlowHandler:
         elif flow_token == self.flow_token_reset_pin:
             if screen == "VALIDATION":
                 phone_raw = data.get("phone_number")
-                logger.info(f"Phone Number From Flow Reset PIN : {phone_number}")
+                logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
                 phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
                 if not phone_number:
                     logger.error("Missing or malformed phone_number in VALIDATION flow")
                     return {

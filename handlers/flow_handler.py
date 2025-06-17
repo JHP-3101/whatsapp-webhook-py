@@ -79,9 +79,6 @@ class FlowHandler:
     async def validate_birth_date(self, version: str, data: dict, phone_number: str):
         birth_date_input = data.get("birth_date", "")
         
-        if phone_number.startswith("62"):
-            phone_number = "0" + phone_number[2:]
-        
         logger.info(f"Reset PIN | Birth Date Input : {birth_date_input}")
 
         if not birth_date_input:

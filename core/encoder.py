@@ -5,7 +5,7 @@ from Crypto.Util.Padding import pad
 from globals.constants import SaltPin
 
 class PinEncryptor:
-    def encrypt_pin(text: str) -> str:
+    def encrypt_pin(self, text: str) -> str:
         key = SaltPin.PIN.encode()
         if len(key) != 32:
             raise ValueError("Key must be exactly 32 bytes long for AES-256-CBC.")

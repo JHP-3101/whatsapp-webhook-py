@@ -162,6 +162,7 @@ class FlowHandler:
 
         # Rule 1: PIN and confirmation must not be empty
         if not pin or not confirm_pin:
+            logger.info("[FlowHandler] Blank PIN and PIN Confirmation")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -173,6 +174,7 @@ class FlowHandler:
 
         # Rule 2: PIN and confirmation must match
         if pin != confirm_pin:
+            logger.info("[FlowHandler] PIN not equal to PIN Confirmation")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -184,6 +186,7 @@ class FlowHandler:
 
         # Rule 3: Cannot be all repeated digits (e.g. 111111)
         if len(set(pin)) == 1:
+            logger.info("[FlowHandler] PIN is a repeated number")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -200,10 +203,11 @@ class FlowHandler:
 
             # Handle PLMS response codes
             if response_code == "00":
+                logger.info("[FlowHandler] Success Reset PIN")
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
-                    "action": "update",
+                    "action": "complete",
                     "data": {
                         "pin": pin,
                         "confirm_pin": confirm_pin,
@@ -211,6 +215,7 @@ class FlowHandler:
                     }
                 }
             elif response_code == "E104":
+                logger.info("[FlowHandler] PIN is the same with latest PIN")
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
@@ -220,6 +225,7 @@ class FlowHandler:
                     }
                 }
             elif response_code == "E105":
+                logger.info("[FlowHandler] PIN is a birth date combination and repeated number")
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
@@ -229,6 +235,7 @@ class FlowHandler:
                     }
                 }
             elif response_code != "00":
+                logger.info(f"[FlowHandler] Cannot Process PIN with {response_code}")
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
@@ -239,6 +246,7 @@ class FlowHandler:
                 }
 
             else:
+                logger.info(f"[FlowHandler] Failed to validate PIN {response_code}")
                 return {
                     "version": version,
                     "screen": "RESET_PIN",

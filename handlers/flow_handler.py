@@ -154,7 +154,6 @@ class FlowHandler:
     async def validate_pin(self, version: str, data: dict, phone_number: str):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
-        birth_date_input = data.get("birth_date", "")
 
         # Rule 1: PIN and confirmation must not be empty
         if not pin or not confirm_pin:

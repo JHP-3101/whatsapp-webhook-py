@@ -15,7 +15,7 @@ class PLMSService:
         self.q = None
         self.mode = "mobile"
         self.with_balance = 1
-        self.encryptor = PinEncryptor()
+        self.encryptor = PinEncryptor
         
         
     def login(self):
@@ -358,8 +358,11 @@ class PLMSService:
         inquiry = self.inquiry(phone_number)
         card_number = inquiry.get("card_number")
         
+        
         # Get PIN data
+        logger.info(f"Response From Reset Pin Flow: {pin_data}")
         pin = pin_data.get("confirm_pin", "")
+        logger.info(f"PIN Response : {pin}")
         
         # Encrypt PIN
         encrypted_pin = self.encryptor.encrypt_pin(pin)

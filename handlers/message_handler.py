@@ -13,6 +13,7 @@ class MessageHandler:
         from handlers.plms_handler import PLMSHandler
         
         self.flow_token_activation = WAFlow.WAFLOW_TOKEN_ACTIVATE
+        self.flow_token_reset_pin = WAFlow.WAFLOW_TOKEN_RESET_PIN
         self.whatsapp_service = whatsapp_service
         self.contact_handler = ContactHandler(whatsapp_service)
         self.plms_handler = PLMSHandler(whatsapp_service, plms_service)
@@ -62,11 +63,12 @@ class MessageHandler:
             logger.info(f"RESPONSE FROM FLOW {flowData}")
             responseJSON = json.loads(flowData)
             
-            # Handle Member Activation Response
-            validateTokenActivation = responseJSON.get("flow_token")
-            if validateTokenActivation == self.flow_token_activation:
+            # Handle Token
+            validateToken = responseJSON.get("flow_token")
+            if validateToken == self.flow_token_activation:
                 await self.plms_handler.member_activation_status(phone_number, responseJSON)
-                
+            elif validateToken == self.flow_token_reset_pin:
+                await self.plms_handler.resets_pin(phone_number, responseJSON)
             else :
                 logger.error("Validation Error. Activation Token Not Found")
             

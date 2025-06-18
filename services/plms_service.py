@@ -79,28 +79,26 @@ class PLMSService:
     def member_activation(self, phone_number: str, register_data: dict):
         if not self.token:
             self.login()
-            
-        data = register_data
 
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
             
         # Remove All Special Characters From Address
-        address = data.get("address", "")
+        address = register_data.get("address", "")
         address = re.sub(r"[^a-zA-Z0-9\s-]", "", address)
         
         # Change Birth Date Format
-        birth_date = data.get("birth_date", "")
+        birth_date = register_data.get("birth_date", "")
         try:
             birth_date = datetime.strptime(birth_date, "%Y-%m-%d").strftime("%d%m%Y")
         except Exception:
             birth_date = birth_date  # fallback kalau parsing gagal
         
-        name = data.get("name", "")
-        email = data.get("email", "")
-        card_number = data.get("card_number", "")
-        gender = data.get("gender", "")
-        marital = data.get("marital", "")
+        name = register_data.get("name", "")
+        email = register_data.get("email", "")
+        card_number = register_data.get("card_number", "")
+        gender = register_data.get("gender", "")
+        marital = register_data.get("marital", "")
         
         # Checksum sesuai urutan: name + birth_date + phone_number + email + card_number + gender + marital + address + token + secretKey
         text = name + birth_date + phone_number + email + card_number + gender + marital + address + self.token + PLMSSecretKey.SECRET_KEY.value
@@ -349,15 +347,19 @@ class PLMSService:
             raise
         
         
-    def pin_reset(self, phone_number: str, pin: str):
+    def pin_reset(self, phone_number: str, pin_data: dict):
         if not self.token:
             self.login()
             
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
-            
+        
+        # Get Card Number From Inquiry Member
         inquiry = self.inquiry(phone_number)
         card_number = inquiry.get("card_number")
+        
+        # Get PIN data
+        pin = pin_data.get("confirm_pin", "")
         
         # Encrypt PIN
         encrypted_pin = self.encryptor.encrypt_pin(pin)
@@ -394,7 +396,8 @@ class PLMSService:
             
         if phone_number.startswith("62"):
             phone_number = "0" + phone_number[2:]
-            
+        
+        # Get Card Number From Inquiry
         inquiry = self.inquiry(phone_number)
         card_number = inquiry.get("card_number")
         

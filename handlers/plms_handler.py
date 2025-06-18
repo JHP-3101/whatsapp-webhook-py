@@ -251,9 +251,10 @@ class PLMSHandler:
         except Exception as e:
             logger.error(f"Error during Pin Checker: {e}", exc_info=True)
             
-    async def resets_pin(self, phone_number: str, pin: str):
+    async def resets_pin(self, phone_number: str, pin_data: dict):
         try: 
-            result = self.plms_service.pin_reset(phone_number, pin)
+            
+            result = self.plms_service.pin_reset(phone_number, pin_data)
             response_code = result.get("response_code")
             logger.info(f"Response Code From Pin Reset: {response_code}")
             
@@ -266,8 +267,7 @@ class PLMSHandler:
                 
             else:
                 logger.error(f"{response_code} | Gagal melakukan proses reset pin")
-                
-            
+                   
         except Exception as e:
             logger.error(f"Error during Pin Resets: {e}", exc_info=True)
             

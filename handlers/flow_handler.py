@@ -129,7 +129,9 @@ class FlowHandler:
                     "version": version,
                     "screen": "RESET_PIN",
                     "action": "update",
-                    "data": {}
+                    "data": {
+                        "phone_number": phone_number
+                    }
                 }
             else:
                 return {

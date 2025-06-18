@@ -47,7 +47,7 @@ class FlowHandler:
                     
                 return await self.validate_birth_date(version, data, phone_number)
             
-            elif screen == "RESET_PIN":
+            elif action == "complete" and screen == "RESET_PIN":
                 phone_raw = data.get("phone_number")
                 logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
                 phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw

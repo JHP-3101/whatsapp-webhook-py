@@ -203,7 +203,7 @@ class FlowHandler:
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
-                    "action": "complete",
+                    "action": "update",
                     "data": {
                         "pin": pin,
                         "confirm_pin": confirm_pin,

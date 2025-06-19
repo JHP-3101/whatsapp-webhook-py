@@ -156,13 +156,11 @@ class FlowHandler:
         
     
     async def validate_pin(self, version: str, data: dict, phone_number: str):
-        logger.info("[FlowHandler] validate_pin triggered")
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
+        birth_date_input = data.get("birth_date", "")  # Optional: passed from previous screen
 
-        # Rule 1: PIN and confirmation must not be empty
         if not pin or not confirm_pin:
-            logger.info("[FlowHandler] Blank PIN and PIN Confirmation")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -172,9 +170,7 @@ class FlowHandler:
                 }
             }
 
-        # Rule 2: PIN and confirmation must match
         if pin != confirm_pin:
-            logger.info("[FlowHandler] PIN not equal to PIN Confirmation")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -184,9 +180,8 @@ class FlowHandler:
                 }
             }
 
-        # Rule 3: Cannot be all repeated digits (e.g. 111111)
+        # Rule 1: Cannot be same repeated digit
         if len(set(pin)) == 1:
-            logger.info("[FlowHandler] PIN is a repeated number")
             return {
                 "version": version,
                 "screen": "RESET_PIN",
@@ -196,65 +191,109 @@ class FlowHandler:
                 }
             }
 
-        try:
-            result = self.plms_service.pin_reset(phone_number, data)
-            response_code = result.get("response_code", "")
-            logger.info(f"PLMS PIN Reset Response Code: {response_code}")
+        # Rule 2: Cannot be sequential
+        if pin in ["123456", "234567", "345678", "456789", "012345", "654321", "543210", "432109"]:
+            return {
+                "version": version,
+                "screen": "RESET_PIN",
+                "action": "update",
+                "data": {
+                    "pin_error": "⚠️ PIN tidak boleh berupa angka berurutan"
+                }
+            }
 
-            # Handle PLMS response codes
-            if response_code == "00":
-                logger.info("[FlowHandler] Success Reset PIN")
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "complete",
-                    "data": {
-                        "pin": pin,
-                        "confirm_pin": confirm_pin,
-                        "phone_number": phone_number  # needed later in webhook
+        # Rule 3: Cannot match birth date (ddmmyy / yymmdd)
+        if birth_date_input:
+            try:
+                birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
+                ddmmyy = birth_dt.strftime("%d%m%y")
+                yymmdd = birth_dt.strftime("%y%m%d")
+                if pin == ddmmyy or pin == yymmdd:
+                    return {
+                        "version": version,
+                        "screen": "RESET_PIN",
+                        "action": "update",
+                        "data": {
+                            "pin_error": "⚠️ PIN tidak boleh sama dengan tanggal lahir Anda"
+                        }
                     }
-                }
-            elif response_code == "E104":
-                logger.info("[FlowHandler] PIN is the same with latest PIN")
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "update",
-                    "data": {
-                        "pin_error": "⚠️ PIN tidak boleh sama seperti PIN sebelumnya."
-                    }
-                }
-            elif response_code == "E105":
-                logger.info("[FlowHandler] PIN is a birth date combination and repeated number")
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "update",
-                    "data": {
-                        "pin_error": "⚠️ PIN tidak boleh angka berurutan atau kombinasi tanggal lahir."
-                    }
-                }
-            elif response_code != "00":
-                logger.info(f"[FlowHandler] Cannot Process PIN with {response_code}")
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "update",
-                    "data": {
-                        "pin_error": "⚠️ Gagal memproses PIN. Silakan coba lagi nanti."
-                    }
-                }
+            except Exception as e:
+                logger.warning(f"Skipping birth date PIN check due to parsing error: {e}")
 
-            else:
-                logger.info(f"[FlowHandler] Failed to validate PIN {response_code}")
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "update",
-                    "data": {
-                        "pin_error": "⚠️ Gagal memvalidasi PIN. Silakan coba beberapa saat lagi."
-                    }
-                }
+        return {
+            "version": version,
+            "screen": "RESET_PIN",
+            "action": "complete",
+            "data": {
+                "pin": pin
+            }
+        }
 
-        except Exception as e:
-            logger.error(f"Exception during pin reset: {e}", exc_info=True)
+        # try:
+        #     result = self.plms_service.pin_reset(phone_number, data)
+        #     response_code = result.get("response_code", "")
+        #     logger.info(f"PLMS PIN Reset Response Code: {response_code}")
+
+        #     # Handle PLMS response codes
+        #     if response_code == "00":
+        #         logger.info("[FlowHandler] Success Reset PIN")
+        #         return {
+        #             "version": version,
+        #             "screen": "RESET_PIN",
+        #             "action": "complete",
+        #             "data": {
+        #                 "pin": pin,
+        #                 "confirm_pin": confirm_pin,
+        #                 "phone_number": phone_number  # needed later in webhook
+        #             }
+        #         }
+        #     elif response_code == "E104":
+        #         logger.info("[FlowHandler] PIN is the same with latest PIN")
+        #         return {
+        #             "version": version,
+        #             "screen": "RESET_PIN",
+        #             "action": "update",
+        #             "data": {
+        #                 "pin_error": "⚠️ PIN tidak boleh sama seperti PIN sebelumnya."
+        #             }
+        #         }
+        #     elif response_code == "E105":
+        #         logger.info("[FlowHandler] PIN is a birth date combination and repeated number")
+        #         return {
+        #             "version": version,
+        #             "screen": "RESET_PIN",
+        #             "action": "update",
+        #             "data": {
+        #                 "pin_error": "⚠️ PIN tidak boleh angka berurutan atau kombinasi tanggal lahir."
+        #             }
+        #         }
+        #     elif response_code != "00":
+        #         logger.info(f"[FlowHandler] Cannot Process PIN with {response_code}")
+        #         return {
+        #             "version": version,
+        #             "screen": "RESET_PIN",
+        #             "action": "update",
+        #             "data": {
+        #                 "pin_error": "⚠️ Gagal memproses PIN. Silakan coba lagi nanti."
+        #             }
+        #         }
+
+        #     else:
+        #         logger.info(f"[FlowHandler] Failed to validate PIN {response_code}")
+        #         return {
+        #             "version": version,
+        #             "screen": "RESET_PIN",
+        #             "action": "update",
+        #             "data": {
+        #                 "pin_error": "⚠️ Gagal memvalidasi PIN. Silakan coba beberapa saat lagi."
+        #             }
+        #         }
+
+        # except Exception as e:
+        #     logger.error(f"Exception during checking pin reset: {e}", exc_info=True)
+            
+    # aysnc def commit_pin(self, version: str, data: dict, phone_number: str):
+    #     try :
+            
+    #     except Exception as e:
+    #         logger.error(f"Exception during commit pin: {e}", exc_info=True)

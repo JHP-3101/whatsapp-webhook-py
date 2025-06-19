@@ -237,6 +237,7 @@ class FlowHandler:
                 "data": {
                         "pin": pin,
                         "confirm_pin": confirm_pin,
+                        "birth_date": birth_date_input,
                         "phone_number": phone_number
                     }
                 }

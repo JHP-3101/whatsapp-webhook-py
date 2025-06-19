@@ -230,17 +230,16 @@ class FlowHandler:
                     }
                 }
 
-            else: 
-                return {
-                    "version": version,
-                    "screen": "RESET_PIN",
-                    "action": "complete",
-                    "data": {
-                            "pin": pin,
-                            "confirm_pin": confirm_pin,
-                            "phone_number": phone_number
-                        }
+            return {
+                "version": version,
+                "screen": "RESET_PIN",
+                "action": "complete",
+                "data": {
+                        "pin": pin,
+                        "confirm_pin": confirm_pin,
+                        "phone_number": phone_number
                     }
+                }
         
         except Exception as e:
             logger.error(f"Exception during checking pin reset: {e}", exc_info=True)

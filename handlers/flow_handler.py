@@ -251,7 +251,7 @@ class FlowHandler:
             response = {
                 "version": version,
                 "screen": "CONFIRMATION",
-                "action": "complete",
+                "action": "update",
                 "data": {
                     key: data.get(key, "") for key in [
                         "phone_number", "pin", "confirm_pin"

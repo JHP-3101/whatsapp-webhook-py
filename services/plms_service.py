@@ -198,7 +198,7 @@ class PLMSService:
         
         try :
             response = requests.post(f"{self.endpoint}/transactionhistory", json=payload)
-            response.raise_for_status()
+            # response.raise_for_status()
             data = response.json()
             logger.info(f"Transactio History response : {data}")
             return data

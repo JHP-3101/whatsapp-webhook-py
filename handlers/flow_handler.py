@@ -232,7 +232,7 @@ class FlowHandler:
 
             return {
                 "version": version,
-                "screen": "RESET_PIN",
+                "screen": "CONFIRMATION",
                 "action": "update",
                 "data": {
                         "pin": pin,
@@ -250,8 +250,8 @@ class FlowHandler:
         try:
             response = {
                 "version": version,
-                "screen": "CONFIRM",
-                "action": "update",
+                "screen": "CONFIRMATION",
+                "action": "complete",
                 "data": {
                     key: data.get(key, "") for key in [
                         "phone_number", "pin", "confirm_pin"

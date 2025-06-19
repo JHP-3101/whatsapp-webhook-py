@@ -39,23 +39,11 @@ class FlowHandler:
             
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
-            if screen == "VALIDATION":
-                # phone_raw = data.get("phone_number")
-                # logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
-                # phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-                # logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
-                # if not phone_number:
-                #     logger.error("Missing or malformed phone_number in VALIDATION flow")       
+            if screen == "VALIDATION":    
                 logger.info("[FlowHandler] entering validate_birth_date() flow path")  
                 return await self.validate_birth_date(version, data)
             
             elif screen == "RESET_PIN":
-                # phone_raw = data.get("phone_number")
-                # logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
-                # phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-                # logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
-                # if not phone_number:
-                #     logger.error("Missing or malformed phone_number in RESET_PIN flow")
                 logger.info("[FlowHandler] entering validate_pin() flow path")    
                 return await self.validate_pin(version, data)
             
@@ -264,4 +252,3 @@ class FlowHandler:
 
         except Exception as e:
             logger.error(f"Exception during commit pin reset: {e}", exc_info=True)
-

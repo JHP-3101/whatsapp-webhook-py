@@ -159,77 +159,78 @@ class FlowHandler:
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
         birth_date_input = data.get("birth_date", "")  # Optional: passed from previous screen
-
-        if not pin or not confirm_pin:
-            return {
-                "version": version,
-                "screen": "RESET_PIN",
-                "action": "update",
-                "data": {
-                    "pin_error": "⚠️ PIN dan konfirmasi wajib diisi"
+            
+        birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
+        ddmmyy = birth_dt.strftime("%d%m%y")
+        yymmdd = birth_dt.strftime("%y%m%d")
+        try: 
+            if not pin or not confirm_pin:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {
+                        "pin_error": "⚠️ PIN dan konfirmasi wajib diisi"
+                    }
                 }
-            }
 
-        if pin != confirm_pin:
-            return {
-                "version": version,
-                "screen": "RESET_PIN",
-                "action": "update",
-                "data": {
-                    "pin_error": "⚠️ PIN dan konfirmasi PIN tidak sama"
+            elif pin != confirm_pin:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {
+                        "pin_error": "⚠️ PIN dan konfirmasi PIN tidak sama"
+                    }
                 }
-            }
 
-        # Rule 1: Cannot be same repeated digit
-        if len(set(pin)) == 1:
-            return {
-                "version": version,
-                "screen": "RESET_PIN",
-                "action": "update",
-                "data": {
-                    "pin_error": "⚠️ PIN tidak boleh berupa pengulangan angka"
+            # Rule 1: Cannot be same repeated digit
+            elif len(set(pin)) == 1:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {
+                        "pin_error": "⚠️ PIN tidak boleh berupa pengulangan angka"
+                    }
                 }
-            }
 
-        # Rule 2: Cannot be sequential
-        if pin in ["123456", "234567", "345678", "456789", "012345", "654321", "543210", "432109"]:
-            return {
-                "version": version,
-                "screen": "RESET_PIN",
-                "action": "update",
-                "data": {
-                    "pin_error": "⚠️ PIN tidak boleh berupa angka berurutan"
+            # Rule 2: Cannot be sequential
+            elif pin in ["123456", "234567", "345678", "456789", "012345", "654321", "543210", "432109"]:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {
+                        "pin_error": "⚠️ PIN tidak boleh berupa angka berurutan"
+                    }
                 }
-            }
 
-        # Rule 3: Cannot match birth date (ddmmyy / yymmdd)
-        if birth_date_input:
-            try:
-                birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
-                ddmmyy = birth_dt.strftime("%d%m%y")
-                yymmdd = birth_dt.strftime("%y%m%d")
-                if pin == ddmmyy or pin == yymmdd:
-                    return {
-                        "version": version,
-                        "screen": "RESET_PIN",
-                        "action": "update",
-                        "data": {
+            # Rule 3: Cannot match birth date (ddmmyy / yymmdd)
+            elif pin == ddmmyy or pin == yymmdd:
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "update",
+                    "data": {
                             "pin_error": "⚠️ PIN tidak boleh sama dengan tanggal lahir Anda"
                         }
                     }
-            except Exception as e:
-                logger.warning(f"Skipping birth date PIN check due to parsing error: {e}")
 
-        return {
-            "version": version,
-            "screen": "RESET_PIN",
-            "action": "complete",
-            "data": {
-                "pin": pin,
-                "confirm_pin": confirm_pin,
-                "phone_number": phone_number
-            }
-        }
+            else: 
+                return {
+                    "version": version,
+                    "screen": "RESET_PIN",
+                    "action": "complete",
+                    "data": {
+                            "pin": pin,
+                            "confirm_pin": confirm_pin,
+                            "phone_number": phone_number
+                        }
+                    }
+        
+        except Exception as e:
+            logger.error(f"Exception during checking pin reset: {e}", exc_info=True)
 
         # try:
         #     result = self.plms_service.pin_reset(phone_number, data)
@@ -293,9 +294,4 @@ class FlowHandler:
 
         # except Exception as e:
         #     logger.error(f"Exception during checking pin reset: {e}", exc_info=True)
-            
-    # aysnc def commit_pin(self, version: str, data: dict, phone_number: str):
-    #     try :
-            
-    #     except Exception as e:
-    #         logger.error(f"Exception during commit pin: {e}", exc_info=True)
+

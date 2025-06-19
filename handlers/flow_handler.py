@@ -34,30 +34,34 @@ class FlowHandler:
         # ACTIVATE MEMBER
         if flow_token == self.flow_token_activate:
             if screen == "REGISTER":
+                logger.info("[FlowHandler] entering validate_activation() flow path") 
                 return await self.validate_activation(version, data)
             
         # RESET PIN 
         elif flow_token == self.flow_token_reset_pin:
             if screen == "VALIDATION":
-                phone_raw = data.get("phone_number")
-                logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
-                phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-                logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
-                if not phone_number:
-                    logger.error("Missing or malformed phone_number in VALIDATION flow")
-                    
-                return await self.validate_birth_date(version, data, phone_number)
+                # phone_raw = data.get("phone_number")
+                # logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
+                # phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                # logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
+                # if not phone_number:
+                #     logger.error("Missing or malformed phone_number in VALIDATION flow")       
+                logger.info("[FlowHandler] entering validate_birth_date() flow path")  
+                return await self.validate_birth_date(version, data)
             
             elif screen == "RESET_PIN":
-                phone_raw = data.get("phone_number")
-                logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
-                phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
-                logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
-                if not phone_number:
-                    logger.error("Missing or malformed phone_number in RESET_PIN flow")
-                
+                # phone_raw = data.get("phone_number")
+                # logger.info(f"Phone Raw Data From Flow Reset PIN : {phone_raw}")
+                # phone_number = phone_raw.get("value") if isinstance(phone_raw, dict) else phone_raw
+                # logger.info(f"Phone Number Data From Flow Reset PIN : {phone_raw}")
+                # if not phone_number:
+                #     logger.error("Missing or malformed phone_number in RESET_PIN flow")
                 logger.info("[FlowHandler] entering validate_pin() flow path")    
-                return await self.validate_pin(version, data, phone_number)
+                return await self.validate_pin(version, data)
+            
+            elif screen == "CONFIRMATION":
+                logger.info("[FlowHandler] entering commit_pin() flow path") 
+                return await self.commit_pin(version, data)
                 
         else:
             return {
@@ -90,8 +94,9 @@ class FlowHandler:
         logger.info(f"CONFIRMATION DATA FROM FLOW | {response}")
         return response
 
-    async def validate_birth_date(self, version: str, data: dict, phone_number: str):
+    async def validate_birth_date(self, version: str, data: dict):
         birth_date_input = data.get("birth_date", "")
+        phone_number = data.get("phone_number", "")
         
         logger.info(f"Reset PIN | Birth Date Input : {birth_date_input}")
 
@@ -156,13 +161,12 @@ class FlowHandler:
             }
         
     
-    async def validate_pin(self, version: str, data: dict, phone_number: str):
+    async def validate_pin(self, version: str, data: dict):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
+        phone_number = data.get("phone_number", "")
                 
         birth_date_input = data.get("birth_date", "")
-
-        # Default None, akan dicek nanti
         ddmmyy = yymmdd = None
         if birth_date_input:
             try:
@@ -241,66 +245,23 @@ class FlowHandler:
         except Exception as e:
             logger.error(f"Exception during checking pin reset: {e}", exc_info=True)
 
-        # try:
-        #     result = self.plms_service.pin_reset(phone_number, data)
-        #     response_code = result.get("response_code", "")
-        #     logger.info(f"PLMS PIN Reset Response Code: {response_code}")
 
-        #     # Handle PLMS response codes
-        #     if response_code == "00":
-        #         logger.info("[FlowHandler] Success Reset PIN")
-        #         return {
-        #             "version": version,
-        #             "screen": "RESET_PIN",
-        #             "action": "complete",
-        #             "data": {
-        #                 "pin": pin,
-        #                 "confirm_pin": confirm_pin,
-        #                 "phone_number": phone_number  # needed later in webhook
-        #             }
-        #         }
-        #     elif response_code == "E104":
-        #         logger.info("[FlowHandler] PIN is the same with latest PIN")
-        #         return {
-        #             "version": version,
-        #             "screen": "RESET_PIN",
-        #             "action": "update",
-        #             "data": {
-        #                 "pin_error": "⚠️ PIN tidak boleh sama seperti PIN sebelumnya."
-        #             }
-        #         }
-        #     elif response_code == "E105":
-        #         logger.info("[FlowHandler] PIN is a birth date combination and repeated number")
-        #         return {
-        #             "version": version,
-        #             "screen": "RESET_PIN",
-        #             "action": "update",
-        #             "data": {
-        #                 "pin_error": "⚠️ PIN tidak boleh angka berurutan atau kombinasi tanggal lahir."
-        #             }
-        #         }
-        #     elif response_code != "00":
-        #         logger.info(f"[FlowHandler] Cannot Process PIN with {response_code}")
-        #         return {
-        #             "version": version,
-        #             "screen": "RESET_PIN",
-        #             "action": "update",
-        #             "data": {
-        #                 "pin_error": "⚠️ Gagal memproses PIN. Silakan coba lagi nanti."
-        #             }
-        #         }
+    async def commit_pin(self, version: str, data: dict):
+        try:
+            response = {
+                "version": version,
+                "screen": "CONFIRM",
+                "action": "update",
+                "data": {
+                    key: data.get(key, "") for key in [
+                        "phone_number", "pin", "confirm_pin"
+                    ]
+                }
+            }
+            
+            logger.info(f"Commit PIN Response | {response}")
+            return response
 
-        #     else:
-        #         logger.info(f"[FlowHandler] Failed to validate PIN {response_code}")
-        #         return {
-        #             "version": version,
-        #             "screen": "RESET_PIN",
-        #             "action": "update",
-        #             "data": {
-        #                 "pin_error": "⚠️ Gagal memvalidasi PIN. Silakan coba beberapa saat lagi."
-        #             }
-        #         }
-
-        # except Exception as e:
-        #     logger.error(f"Exception during checking pin reset: {e}", exc_info=True)
+        except Exception as e:
+            logger.error(f"Exception during commit pin reset: {e}", exc_info=True)
 

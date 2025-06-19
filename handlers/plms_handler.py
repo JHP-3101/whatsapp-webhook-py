@@ -259,14 +259,31 @@ class PLMSHandler:
             logger.info(f"Response Code From Pin Reset: {response_code}")
             
             if response_code == "00":
-                logger.info(f"{phone_number} has reset pin ")
+                logger.info(f"[PLMSHandler] User : {phone_number} has reset pin ")
                 await self.whatsapp_service.send_message_with_button(phone_number, "Anda telah berhasil melakukan Reset Pin\n\nSilahkan pilih layanan member lainnya.",
                                                             [
                                                                 {"id": "go-back-member-menu", "title": "Kembali"}
                                                             ])
+            elif response_code == "E104":
+                logger.info(f"[PLMSHandler] User : {phone_number}, PIN is the same with latest PIN")
+                await self.whatsapp_service.send_message_with_button(phone_number, "Reset PIN gagal dilakukan. Karena PIN lama dan baru sama.\n\nSilahkan kembali untuk ulangi Reset PIN atau pilih layanan member lainnya.",
+                                                            [
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
+                                                            ])
                 
-            else:
-                logger.error(f"{response_code} | Gagal melakukan proses reset pin")
+            elif response_code == "E105":
+                logger.info(f"[PLMSHanlder] User : {phone_number}, PIN is a birth date combination and repeated number")
+                await self.whatsapp_service.send_message_with_button(phone_number, "Reset PIN gagal dilakukan. Karena PIN merupakan kombinasi tanggal lahir atau pengulangan angka.\n\nSilahkan kembali untuk ulangi Reset PIN atau pilih layanan member lainnya.",
+                                                            [
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
+                                                            ])
+            
+            elif response_code != "00":
+                logger.info(f"[FlowHandler] Cannot Process PIN with {response_code}")
+                await self.whatsapp_service.send_message_with_button(phone_number, "Reset PIN gagal dilakukan. Terjadi kesalahan pada sistem.\n\nSilahkan kembali untuk ulangi Reset PIN atau pilih layanan member lainnya.",
+                                                            [
+                                                                {"id": "go-back-member-menu", "title": "Kembali"}
+                                                            ]) 
                    
         except Exception as e:
             logger.error(f"Error during Pin Resets: {e}", exc_info=True)

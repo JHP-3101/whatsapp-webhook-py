@@ -130,7 +130,8 @@ class FlowHandler:
                     "screen": "RESET_PIN",
                     "action": "update",
                     "data": {
-                        "phone_number": phone_number
+                        "phone_number": phone_number,
+                        "birth_date": birth_date_input
                     }
                 }
             else:
@@ -158,10 +159,10 @@ class FlowHandler:
     async def validate_pin(self, version: str, data: dict, phone_number: str):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
-            
-        member = self.plms_service.inquiry(phone_number)
-        birth_dt = member.get("birth_date", "")
         
+        birth_date_input = data.get("birth_date", "")
+            
+        birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
         ddmmyy = birth_dt.strftime("%d%m%y")
         yymmdd = birth_dt.strftime("%y%m%d")
         

@@ -159,12 +159,18 @@ class FlowHandler:
     async def validate_pin(self, version: str, data: dict, phone_number: str):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
-        
+                
         birth_date_input = data.get("birth_date", "")
-            
-        birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
-        ddmmyy = birth_dt.strftime("%d%m%y")
-        yymmdd = birth_dt.strftime("%y%m%d")
+
+        # Default None, akan dicek nanti
+        ddmmyy = yymmdd = None
+        if birth_date_input:
+            try:
+                birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
+                ddmmyy = birth_dt.strftime("%d%m%y")
+                yymmdd = birth_dt.strftime("%y%m%d")
+            except Exception as e:
+                logger.warning(f"[FlowHandler] Invalid birth_date format: {birth_date_input}")
         
         try: 
             if not pin or not confirm_pin:
@@ -210,15 +216,15 @@ class FlowHandler:
                 }
 
             # Rule 3: Cannot match birth date (ddmmyy / yymmdd)
-            elif pin == ddmmyy or pin == yymmdd:
+            elif (ddmmyy and pin == ddmmyy) or (yymmdd and pin == yymmdd):
                 return {
                     "version": version,
                     "screen": "RESET_PIN",
                     "action": "update",
                     "data": {
-                            "pin_error": "⚠️ PIN tidak boleh sama dengan tanggal lahir Anda"
-                        }
+                        "pin_error": "⚠️ PIN tidak boleh sama dengan tanggal lahir Anda"
                     }
+                }
 
             else: 
                 return {

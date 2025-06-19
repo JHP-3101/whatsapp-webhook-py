@@ -158,11 +158,13 @@ class FlowHandler:
     async def validate_pin(self, version: str, data: dict, phone_number: str):
         pin = data.get("pin", "")
         confirm_pin = data.get("confirm_pin", "")
-        birth_date_input = data.get("birth_date", "")  # Optional: passed from previous screen
             
-        birth_dt = datetime.strptime(birth_date_input, "%Y-%m-%d")
+        member = self.plms_service.inquiry(phone_number)
+        birth_dt = member.get("birth_date", "")
+        
         ddmmyy = birth_dt.strftime("%d%m%y")
         yymmdd = birth_dt.strftime("%y%m%d")
+        
         try: 
             if not pin or not confirm_pin:
                 return {

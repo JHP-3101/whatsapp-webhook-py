@@ -225,7 +225,9 @@ class FlowHandler:
             "screen": "RESET_PIN",
             "action": "complete",
             "data": {
-                "pin": pin
+                "pin": pin,
+                "confirm_pin": confirm_pin,
+                "phone_number": phone_number
             }
         }
 

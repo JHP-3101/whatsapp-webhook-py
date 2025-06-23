@@ -200,7 +200,7 @@ class PLMSService:
             response = requests.post(f"{self.endpoint}/transactionhistory", json=payload)
             # response.raise_for_status()
             data = response.json()
-            logger.info(f"Transactio History response : {data}")
+            logger.info(f"Transaction History response : {data}")
             return data
 
         except Exception as e:

@@ -27,14 +27,14 @@ flow_handler = FlowHandler(whatsapp_service, plms_service)
 message_handler = MessageHandler(whatsapp_service, plms_service)
 contact_handler = ContactHandler(whatsapp_service)
 
-@router.get("/login")
-async def plms_login():
-    try:
-        plms_service = PLMSService()
-        plms_service.login()
-        return{"message": "Login successful"}
-    except Exception as e:
-        return Response(content=f"Login failed: {str(e)}", status_code=500)
+# @router.get("/login")
+# async def plms_login():
+#     try:
+#         plms_service = PLMSService()
+#         plms_service.login()
+#         return{"message": "Login successful"}
+#     except Exception as e:
+#         return Response(content=f"Login failed: {str(e)}", status_code=500)
 
 @router.get("/webhook")
 async def verify_webhook(request: Request):

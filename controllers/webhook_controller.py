@@ -17,7 +17,7 @@ load_dotenv()
 TOKEN_VERIFIER_WEBHOOK = os.getenv("TOKEN_VERIFIER_WEBHOOK")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
-PASSPHRASE_ENV = os.environ.get("PASSPHRASE_ENV")  # if needed
+PASSPHRASE_ENV = os.environ.get("PASSPHRASE_ENV")
 
 crypto_service = FlowCryptoService(PRIVATE_KEY, PASSPHRASE_ENV)
 
